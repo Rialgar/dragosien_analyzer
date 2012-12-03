@@ -1,3 +1,6 @@
+//dataStore.js -- background page responsible for storing data sent by the
+//injected script (readData.js)
+
 chrome.extension.onMessage.addListener(function(msg,sender,sendResponse){
 	if(msg.type == "storeData"){
 		chrome.pageAction.show(sender.tab.id);

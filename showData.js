@@ -1,5 +1,12 @@
+//showData.js -- aggregates read Data and displays results in popup.xhtml
+
 window.addEventListener("load",function(){
-	data = {};
+	var storeValueNode = document.getElementById("storeValue");
+	var productionValueNode = document.getElementById("productionValue"); 
+	var renovationCostsNode = document.getElementById("renovationCosts"); 
+	var renovationBaseNode = document.getElementById("renovationBase");
+	  			
+	var data = {};
 	data.production =  getData("production");
 	data.store =  getData("store");
 	data.prices =  getData("prices");
@@ -14,14 +21,12 @@ window.addEventListener("load",function(){
 				production_value += (data.production[key].plus + data.production[key].minus) * data.prices[key];
 			}
 		}
-	
-		var storeValueNode = document.getElementById("storeValue"); 
+	 
 	  storeValueNode.removeAllChildren();
 		storeValueNode.appendChild(
 			document.createTextNode(formatNumber(store_value))
 		);
 		
-		var productionValueNode = document.getElementById("productionValue"); 
 	  productionValueNode.removeAllChildren();
 		productionValueNode.appendChild(
 			document.createTextNode(formatNumber(production_value))
@@ -57,13 +62,11 @@ window.addEventListener("load",function(){
 		}
 		console.log(renovation_costs)
 		if(renovation_costs >= 0){
-			var renovationCostsNode = document.getElementById("renovationCosts"); 
-	  	renovationCostsNode.removeAllChildren();
+			renovationCostsNode.removeAllChildren();
 			renovationCostsNode.appendChild(
 				document.createTextNode(formatNumber(renovation_costs))
 			);
-			
-			var renovationBaseNode = document.getElementById("renovationBase"); 
+			 
 	  	renovationBaseNode.removeAllChildren();
 			renovationBaseNode.appendChild(
 				document.createTextNode(formatNumber(Math.round(renovation_base / 72)))

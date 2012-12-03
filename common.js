@@ -1,3 +1,5 @@
+//functionality reused by severall scripts
+
 function storeData(key, value){
 	if(key){
 		localStorage[key] = JSON.stringify(value)

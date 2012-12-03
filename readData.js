@@ -1,3 +1,7 @@
+//readData.js -- analyzes opened dragosien pages and sends data to extension
+
+//some utility functions and changes to data interface, as localStorage of
+//extension is not accesible
 function storeData(key, value){
 	chrome.extension.sendMessage(
 		{
@@ -51,13 +55,16 @@ var getTableData = function(table, row, collumn, getNode){
 	}
 } 
 
+
 storeData("lastPage", window.location.toString());
 
+//Read and store current amount of gold
 var userinfo = document.getElementById("userinfo");
 if(userinfo){
 	storeData("gold", userinfo.textContent.match(/Gold: ([0-9\.]+)/)[1].replace(".",""));
 }
 
+//----------------------------------FIND TABLES---------------------------------
 console.log("searching tables");
 
 var market_price_table = document.getElementById("market_price");
@@ -114,8 +121,10 @@ for (var i = 0; i < tables.length; i++){
 		}
 	}
 }
+//-------------------------------END FIND TABLES--------------------------------
 
 if(market_price_table && market_price_table.nodeName.toLowerCase() === "table"){
+	//read price and store information 
 	console.log("found market overview table");
 		
 	var store = {};
@@ -132,7 +141,10 @@ if(market_price_table && market_price_table.nodeName.toLowerCase() === "table"){
 	prices.Gold = 1;			
 	storeData("store", store);
 	storeData("prices", prices);
-} else if(store_table && store_table.nodeName.toLowerCase() === "table"){
+}
+
+else if(store_table && store_table.nodeName.toLowerCase() === "table"){
+	//read store information
 	console.log("found store table");
 		
 	var store = {};
@@ -150,6 +162,8 @@ if(market_price_table && market_price_table.nodeName.toLowerCase() === "table"){
 }		
 
 if(production_table && production_table.nodeName.toLowerCase() === "table"){
+	//read current production and consumption information
+	//redundant to level and base production for each building
 	console.log("found production table");
 
 	var production = {};
@@ -171,6 +185,7 @@ if(production_table && production_table.nodeName.toLowerCase() === "table"){
 } 
 
 if(building_levels && building_levels.nodeName.toLowerCase() === "table"){
+	//read crrently build buildings levels
 	console.log("found building levels");
 	
 	var levels = {};
@@ -188,6 +203,7 @@ if(building_levels && building_levels.nodeName.toLowerCase() === "table"){
 }
 
 if(building_state && building_state.nodeName.toLowerCase() === "table"){
+	//read the state of buildings, stored as integer in percent
 	console.log("found building state table");
 	
 	var states = {};
@@ -206,11 +222,16 @@ if(building_state && building_state.nodeName.toLowerCase() === "table"){
 }
 
 if(building_info.table && building_info.name){
+	//read building info, consisting of production, consumption and building costs
+	//per level
+	//will propably not change that often and require an opening of the dragopedia
+	//consider hardcoding them
 	console.log("found building info for " + building_info.name)
 	
 	var costOffset = 2;
 	var colspan = 0;
-		
+	
+	//find out how many types of ressources are consumed	
 	if(getTableHeader(building_info.table, 0, 2).match("Material")){
 	 	colspan = getTableHeader(building_info.table, 0, 2, true).getAttribute("colspan") || 1;
 	 	colspan = parseInt(colspan);
@@ -218,8 +239,8 @@ if(building_info.table && building_info.name){
 	}
 	
 	getData("buildingCosts_"+building_info.name, function(response){
+		//read and update building costs per level
 		var building_costs = response.value || {};
-		
 		var rows = building_info.table.getElementsByTagName("tr");
 		for(var i = 2; i < rows.length-1; i++){
 			var data = rows[i].getElementsByTagName("td");
@@ -235,18 +256,14 @@ if(building_info.table && building_info.name){
 		storeData("buildingCosts_"+building_info.name, building_costs);
 	});
 	
+	//read production amount, stored as a base value
+	//production on level n is then (n+1)*base
 	var ressourceName = getTableHeader(building_info.table, 1, 1); 
-	
 	var production =
 		parseInt(getTableData(building_info.table, 2, 1).match(/[0-9]+/)[0])/2;
 	
-	var consumption = {};
-	for(var i = 2; i < costOffset; i++){
-		consumption[getTableHeader(building_info.table, 1, i)] =
-			parseFloat(getTableData(building_info.table, 2, i).match(/[0-9]*\.?[0-9]*/)[0])/2;	
-	}
-	
 	getData("buildingProduction", function(response){
+		//update production values
 		var building_production = response.value || {}		
 	  var prod = building_production[building_info.name];
 	  if(!prod){
@@ -258,8 +275,18 @@ if(building_info.table && building_info.name){
 		}
 	}); 
 	
+	//is tehre consumption?
 	if(colspan){
+		//read consumption, stored as a base value
+		//consumption on level n is then (n+1)*base
+		var consumption = {};
+		for(var i = 2; i < costOffset; i++){
+			consumption[getTableHeader(building_info.table, 1, i)] =
+				parseFloat(getTableData(building_info.table, 2, i).match(/[0-9]*\.?[0-9]*/)[0])/2;	
+		}
+	
 		getData("buildingConsumption", function(response){
+			//update consumption per building
 			var building_consumption = response.value || {}		
 		  var cons = building_consumption[building_info.name];
 		  if(!cons){
@@ -274,6 +301,8 @@ if(building_info.table && building_info.name){
 		}); 
 		
 		if(ressourceName !== "Gold"){
+			//update consumption per resource, does not apply to gold produced by 
+			//Wirtshaus and Gasthaus, redundant to above but organized differently	
 			getData("ressourceCosts", function(response){
 				var ressource_costs = response.value || {}		
 			  var costs = ressource_costs[ressourceName];
