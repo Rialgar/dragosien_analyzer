@@ -1,5 +1,4 @@
 //showData.js -- aggregates read Data and displays results in popup.xhtml
-
 window.addEventListener("load",function(){
 	var storeValueNode = document.getElementById("storeValue");
 	var productionValueNode = document.getElementById("productionValue"); 
@@ -44,7 +43,6 @@ window.addEventListener("load",function(){
 				var state = data.states[key];
 				var level = data.levels[key];
 				var costs = getData("buildingCosts_" + key);
-				console.log(key+" "+level+" "+state);
 				if(costs && costs[level]){
 					for(var resource in costs[level]){
 					  if(costs[level].hasOwnProperty(resource)){
@@ -73,5 +71,13 @@ window.addEventListener("load",function(){
 			);
 		}
 	}
+	
+	//set the details-button script
+	document.getElementById("details").addEventListener("click",function(){
+		chrome.tabs.create({
+			url: "details.xhtml",
+			openerTabId: parseInt(localStorage.lastTab)
+		});
+	});
 	
 });

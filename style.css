@@ -1,0 +1,31 @@
+/* style.css */
+body {
+	background-color: #d2c9c0;
+}
+
+table {
+	white-space: nowrap;	
+}
+
+td:not(:first-child){
+	text-align: right;
+}
+
+button {
+	background-color: #e6dcd2;
+	border-color: #b38659;
+	border-width: 2px;
+	border-style: outset;	
+}
+
+button:active {
+	background-color: #fff4e9;
+	border-style: inset;
+}
+
+td button {
+	margin-left: 1.61803em;
+	margin-right: 1.61803em;
+	width:	-webkit-calc(100% - 3.23606em); 
+	height: 1.61803em;
+}

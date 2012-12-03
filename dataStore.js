@@ -10,6 +10,7 @@ chrome.extension.onMessage.addListener(function(msg,sender,sendResponse){
 			refresh = JSON.parse(localStorage.refresh || "{}");
 			refresh[msg.key] = new Date();
 			localStorage.refresh = JSON.stringify(refresh);
+			localStorage.lastTab = sender.tab.id;
 	  }
 		sendResponse(true);
 	  return true;
