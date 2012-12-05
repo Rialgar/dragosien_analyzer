@@ -19,7 +19,8 @@ function formatNumber(number){
 		output = "." + input.substr(input.length-i,3) + output;
 	}	
 	output = input.substr(0,input.length-i+3) + output;
-	return output; 
+	//return output;
+	return input; 
 }
 
 console.origlog = console.log;
@@ -31,4 +32,16 @@ HTMLElement.prototype.removeAllChildren = function(){
 	while(this.firstChild){
 		this.removeChild(this.firstChild);
 	}
+}
+
+function createTableRow(data){
+	var row = document.createElement("tr");
+	if(data.constructor === Array){
+		data.forEach(function(ea){
+		  var field = document.createElement("td");
+			field.appendChild(document.createTextNode(ea));
+			row.appendChild(field); 
+		});
+	}
+	return row;
 }

@@ -5,16 +5,52 @@
   <head>
   	<title>Dragosien Analyzer</title>
   	<script type = "application/javascript" src = "common.js" charset="UTF-8"></script>
-  	<script type = "application/javascript" src = "showData.js" charset="UTF-8"></script>
+  	<script type = "application/javascript" src = "showDetails.js" charset="UTF-8"></script>
   </head>
   <body>
-		<table>
-			<tr><th colspan = "2">Übersicht</th></tr>
-			<tr><td>Wert des Lagers</td><td id = "storeValue"></td></tr>
-			<tr><td>Wertzuwachs pro Stunde</td><td id = "productionValue"></td></tr>
-			<tr><td>Renovierungskosten</td><td id = "renovationCosts"></td></tr>
-			<tr><td>Renovierungskosten pro Stunde</td><td id = "renovationBase"></td></tr>
-			<tr><td colspan = "2"><button id="details" type="button">Details</button></td></tr>			
-		</table>
+  	<div>
+			<table class="large" id="resource">
+				<tr><th colspan = "10">Ressourcen</th></tr>			
+				<tr>
+					<th>Ressource</th>
+					<th>Wert</th>
+					<th>Menge im Lager</th>
+					<th>Wert im Lager</th>
+					<th>Produktion</th>
+					<th>Wert der Produktion</th>
+					<th>Verbrauch</th>
+					<th>Wert des Verbrauchs</th>
+					<th>Zuwachs</th>
+					<th>Wertzuwachs</th>
+				</tr>
+			</table>
+			<table class="large" id="building">
+				<tr><th colspan = "15">Gebäude</th></tr>
+				<tr>
+					<th>Gebäude</th>
+					<th colspan = "3">Namen</th>
+					<th colspan = "4">Basiswerte</th>
+					<th colspan = "5">Level</th>
+					<th colspan = "2"></th>
+				</tr>
+				<tr>
+					<th></th>
+					<th>Produktion</th>
+					<th>Verbrauch 1</th>
+					<th>Verbrauch 2</th>
+					<th>Produktion</th>
+					<th>Verbrauch 1</th>
+					<th>Verbrauch 2</th>
+					<th>Gewinn</th>
+					<th></th>
+					<th>Produktion</th>
+					<th>Verbrauch 1</th>
+					<th>Verbrauch 2</th>
+					<th>Gewinn</th>
+					<th>Renovierungskosten</th>
+					<th>Renovierungskosten je Stunde</th>
+				</tr>		
+			</table>
+		</div>
   </body>
 </html>

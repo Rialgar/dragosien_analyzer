@@ -275,7 +275,7 @@ if(building_info.table && building_info.name){
 		}
 	}); 
 	
-	//is tehre consumption?
+	//is there consumption?
 	if(colspan){
 		//read consumption, stored as a base value
 		//consumption on level n is then (n+1)*base

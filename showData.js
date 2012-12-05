@@ -58,7 +58,6 @@ window.addEventListener("load",function(){
 				}				
 			}
 		}
-		console.log(renovation_costs)
 		if(renovation_costs >= 0){
 			renovationCostsNode.removeAllChildren();
 			renovationCostsNode.appendChild(
