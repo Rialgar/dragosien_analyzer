@@ -20,8 +20,11 @@ table {
 }
 
 table.large{
-	border-spacing: 2px;
+	border: 2px solid #3C1E00;
+	border-radius: 10px;
+	border-spacing: 0px;
 	margin: auto;
+	overflow: hidden;
 }
 
 table.large td{
@@ -40,6 +43,10 @@ table.large>tr:first-child>th {
 
 table.large>tr:nth-child(even) {
 	background-color: #F8F2EC;
+}
+
+table.large>tr:hover {
+	background-color: #C9B9AC;
 }
 
 table.large>tr:last-child>td {
