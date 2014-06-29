@@ -13,20 +13,31 @@ function getData(key) {
 }
 
 function formatNumber(number){
-	var input = number.toString();
+	var input = Math.abs(number).toString();
+	var parts = input.split(".");
 	var output = "";
-	for (var i = 3; i<input.length; i+=3) {
-		output = "." + input.substr(input.length-i,3) + output;
-	}	
-	output = input.substr(0,input.length-i+3) + output;
-	//return output;
-	return input; 
+	if(parts[0].length > 0){
+		for (var i = 3; i<parts[0].length; i+=3) {
+			output = "." + parts[0].substr(parts[0].length-i,3) + output;
+		}	
+		output = parts[0].substr(0,parts[0].length-i+3) + output;
+	} else {
+		output = "0"
+	}
+	if(parts[1]){
+		output = output + "," + parts[1].substr(0,3);
+	}
+	if(number < 0){
+		output = "-" + output;
+	}
+	return output;
+	//return input; 
 }
 
-console.origlog = console.log;
+/*console.origlog = console.log;
 console.log = function(message){
 	console.origlog("Dragosien Analyzer: " + message);
-}
+}*/
 
 HTMLElement.prototype.removeAllChildren = function(){
 	while(this.firstChild){
