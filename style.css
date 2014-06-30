@@ -1,4 +1,9 @@
 /* style.css */
+* {
+	margin: 0;
+	padding: 0;
+}
+
 body {
 	background-color: #F8F2EC;
 	margin: 0;
@@ -9,21 +14,21 @@ body {
 body > div{
 	/*background-color: #DBD1C8;*/
 	margin: auto;
-	padding: 1em;
+	/*padding: 1em;*/
 	position: relative;
 	/*width: 80em;*/
 }
 
 table {
 	white-space: nowrap;
-	margin: 8px;	
+	margin: 20px;	
 }
 
 table.large{
 	border: 2px solid #3C1E00;
 	border-radius: 10px;
 	border-spacing: 0px;
-	margin: auto;
+	margin: 2em auto;
 	overflow: hidden;
 }
 
@@ -55,10 +60,6 @@ table.large>tr:last-child>td {
 	background-color: #C9B9AC;	
 }
 
-table#resource {
-	margin-bottom: 2em;	
-}
-
 table#building td:nth-child(4) {
 	border-right: 1px solid black;	
 }
@@ -73,16 +74,15 @@ table#building td:nth-child(8) {
 
 table#building td:nth-child(9) {
 	border-left: 1px solid black;
-	min-width: 2em;	
 }
 
-/*table#building td:nth-child(13) {
+table#base td:nth-child(4) {
 	border-right: 1px solid black;	
 }
 
-table#building td:nth-child(14) {
+table#base td:nth-child(5) {
 	border-left: 1px solid black;	
-}*/
+}
 
 td{
 	text-align: right;

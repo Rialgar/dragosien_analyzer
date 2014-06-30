@@ -2,6 +2,7 @@
 window.addEventListener("load",function(){
 	var resourceNode = document.getElementById("resource");
 	var buildingNode = document.getElementById("building");
+	var baseNode = document.getElementById("base");
 
 	var data = {};
 	data.production =  getData("production");
@@ -58,7 +59,7 @@ window.addEventListener("load",function(){
 	data.buildingConsumption = getData("buildingConsumption")
 	
 	if(data.states && data.levels && data.prices){
-		var renovation_costs_sum = 0;
+		/*var renovation_costs_sum = 0;
 		var renovation_base_sum = 0;
 		var production_sum = 0;
 		var consumption_sum = [0,0];
@@ -66,6 +67,8 @@ window.addEventListener("load",function(){
 		
 		for(var key in data.levels){
 			if(data.levels.hasOwnProperty(key)){
+				if(key == "Arena") continue;
+
 				var state = data.states[key];
 				var level = data.levels[key];
 				var bProd = data.buildingProduction[key];
@@ -100,16 +103,15 @@ window.addEventListener("load",function(){
 				var baseProduction = 0;
 				var lvlProduction = 0;
 				var nextProduction = 0;
-				
+				var consumption = [{name:"",base:0, lvl:0, next:0},{name:"", base:0, lvl:0, next:0}];
+
 				if(bProd && data.prices[bProd.name]){
 					baseProduction = bProd.amount * data.prices[bProd.name];
 					lvlProduction = level === 0 ? 0 : baseProduction * (level+1);
 					nextProduction = baseProduction * (level+2);
 				}
-
-				consumption = [{name:"",base:0, lvl:0, next:0},{name:"", base:0, lvl:0, next:0}];
 				var c = 0;
-				
+			
 				if(bCons){
 					for(var resource in bCons){
 						if(bCons.hasOwnProperty(resource)){
@@ -120,16 +122,15 @@ window.addEventListener("load",function(){
 							c++;
 						}
 					}
-				}													 
+				}
 				
-				//var base_profit = baseProduction - consumption[0].base - consumption[1].base;
 				var profit = lvlProduction - consumption[0].lvl - consumption[1].lvl;
 				var nextProfit = nextProduction - consumption[0].next - consumption[1].next;
 
-				var breakEven = expansion_costs / (nextProfit - profit - renovation_base_next + renovation_base);
+				var breakEven = expansion_costs / (nextProfit - profit - (renovation_base_next - renovation_base));
 
 				renovation_costs_sum += renovation_costs;
-				//renovation_base_sum += renovation_base;
+				renovation_base_sum += renovation_base;
 				if(lvlProduction > 0){
 					production_sum += lvlProduction;
 					consumption_sum[0] += consumption[0].lvl;
@@ -142,19 +143,15 @@ window.addEventListener("load",function(){
 					bProd ? bProd.name : "",
 					consumption[0].name,
 					consumption[1].name,
-					//formatNumber(baseProduction),
-					//formatNumber(consumption[0].base),
-					//formatNumber(consumption[1].base),
-					//formatNumber(base_profit),
 					formatNumber(level),
 					formatNumber(lvlProduction),
 					formatNumber(consumption[0].lvl),
 					formatNumber(consumption[1].lvl),
-					formatNumber(profit),
+					profit > 0 ? formatNumber(profit) : "0",
 					formatNumber(renovation_costs),
 					formatNumber(renovation_base),
-					formatNumber(breakEven)
-					]));				
+					breakEven >= 0 ? formatNumber(breakEven/24): "nicht anwendbar"
+				]));				
 			}
 		}
 		buildingNode.appendChild(createTableRow([
@@ -162,18 +159,56 @@ window.addEventListener("load",function(){
 			"",
 			"",
 			"",
-			//"",
-			//"",
-			//"",
-			//"",
 			"",
 			formatNumber(production_sum),
 			formatNumber(consumption_sum[0]),
 			formatNumber(consumption_sum[1]),
 			formatNumber(profit_sum),
 			formatNumber(renovation_costs_sum),
-			formatNumber(renovation_base_sum)
-			]));
+			formatNumber(renovation_base_sum),
+			""
+			]));*/
 	}
-	
+
+	if(data.prices){
+		var keys = getData("allBuildingNames")
+		for (var i = 0; i <= keys.length; i++) {
+			var key = keys[i];
+
+			var bProd = data.buildingProduction[key];
+			var bCons = data.buildingConsumption[key];
+
+			var baseProduction = 0;
+			var consumption = [{name:"", base:0},{name:"", base:0}];
+
+			if(bProd && data.prices[bProd.name]){
+				baseProduction = bProd.amount * data.prices[bProd.name];
+			}
+
+			var c = 0;
+			if(bCons){
+				for(var resource in bCons){
+					if(bCons.hasOwnProperty(resource)){
+						consumption[c].name = resource;
+						consumption[c].base = bCons[resource] * data.prices[resource];
+						c++;
+					}
+				}
+			}
+
+			var base_profit = baseProduction - consumption[0].base - consumption[1].base;
+
+			baseNode.appendChild(createTableRow([
+				key,
+				bProd ? bProd.name : "",
+				consumption[0].name,
+				consumption[1].name,
+				formatNumber(baseProduction),
+				formatNumber(consumption[0].base),
+				formatNumber(consumption[1].base),
+				base_profit > 0 ? formatNumber(base_profit) : "0"
+			]));
+		}
+	}
+
 });

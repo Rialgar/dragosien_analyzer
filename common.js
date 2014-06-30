@@ -9,6 +9,8 @@ function storeData(key, value){
 function getData(key) {
 	if(localStorage[key]){
 		return JSON.parse(localStorage[key]);
+	} else if(key == "allBuildingNames") {
+		return ["Akademie", "Alchemiehütte", "Arena", "Bauherr", "Böttcher", "Drachenzucht", "Eisengießerei", "Eisenmine", "Garten", "Gasthaus", "Gerber", "Getreideanbau", "Hanfplantage", "Holzfäller", "Imkerei", "Kaufmann", "Kerzengießerei", "Köhlerei", "Kräutergarten", "Lager", "Lehmbrennerei", "Lehmstecherei", "Metzger", "Mühle", "Nagelschmiede", "Obstplantage", "Papiermühle", "Sägewerk", "Sattelmacher", "Seilerei", "Steinbruch", "Steinmetz", "Töpferei", "Viehzucht", "Weberei", "Zeugschmiede"];
 	}
 }
 

@@ -81,7 +81,6 @@ if(table){
 }
 
 var production_table;
-var building_levels;
 var tables = document.getElementsByClassName("overview");
 for (var i = 0; i < tables.length; i++){
 	if(
@@ -90,8 +89,6 @@ for (var i = 0; i < tables.length; i++){
 	){ 
 		if(tables[i].getElementsByTagName("b")[0].textContent.match("Produktion")){
 			production_table = tables[i];
-		}else if(tables[i].getElementsByTagName("b")[0].textContent.match("Gebäudestufen")){
-			building_levels = tables[i];
 		}else if(tables[i].getElementsByTagName("b")[0].textContent.match("Zustand")){
 			building_state = tables[i];
 		}
@@ -122,7 +119,7 @@ for (var i = 0; i < tables.length; i++){
 	}
 }
 //-------------------------------END FIND TABLES--------------------------------
-
+//------------------------------READ FOUND TABLES-------------------------------
 if(market_price_table && market_price_table.nodeName.toLowerCase() === "table"){
 	//read price and store information 
 	console.log("found market overview table");
@@ -184,38 +181,18 @@ if(production_table && production_table.nodeName.toLowerCase() === "table"){
 	storeData("production", production);	
 } 
 
-if(building_levels && building_levels.nodeName.toLowerCase() === "table"){
-	//read crrently build buildings levels
-	console.log("found building levels");
-	
-	var levels = {};
-				
-	var rows = building_levels.getElementsByTagName("tr");
-	for(var i = 0; i<rows.length; i++){
-		var data = rows[i].getElementsByTagName("td");
-		if(data.length >= 2){
-			var key = data[0].textContent.match(/[a-zA-ZäöüÄÖÜß]+/)[0];
-			var lvl = data[1].textContent.match(/\(([0-9]+)\)/)[1];
-			levels[key] = parseInt(lvl);
-		}		
-	}				
-	storeData("levels", levels);
-}
-
 if(building_state && building_state.nodeName.toLowerCase() === "table"){
 	//read the state of buildings, stored as integer in percent
 	console.log("found building state table");
 	
-	var states = {};
+	var states = [];
 				
 	var rows = building_state.getElementsByTagName("tr");
 	for(var i = 0; i<rows.length; i++){
 		var data = rows[i].getElementsByTagName("td");
 		if(data.length >= 2){
-			var key = data[0].getElementsByTagName("a")[0].textContent;
-			key = key.substring(0,key.length-1);
 			var state = data[1].textContent.match(/[0-9]+/)[0];
-			states[key] = parseInt(state);
+			states.push(parseInt(state));
 		}		
 	}				
 	storeData("states", states);
@@ -317,6 +294,42 @@ if(building_info.table && building_info.name){
 				
 				storeData("ressourceCosts", ressource_costs);
 			});
+		}
+	}
+}
+//----------------------------END READ FOUND TABLES-----------------------------
+//-----------------------------READ BUILDING DATA-------------------------------
+var village = document.getElementById("mainVillageDrachenzucht");
+if(village){
+	console.log("found village");
+	var buildings = [];
+	for(var i = 0; i < 22; i++){
+		var tooltip = document.getElementById("tooltip"+(i+1));
+		var h3 = tooltip.getElementsByTagName("h3")[0];
+		var name = h3.textContent.match(/[A-Z][a-zäöüß]+ /);
+		var name = name.substring(0, name.length-1);
+		
+		var level = parseInt(h3.textContent.match(/[0-9]+/));
+
+		buildings.push({name:name, level:level});
+	}
+	storeData("buildings", buildings);
+}
+//-----------------------------READ Store Level---------------------------------
+if(document.evaluate('//*[@id="mainRight"]/table/tbody/tr[21]/td[1]', document, null, XPathResult.STRING_TYPE).stringValue.match(/Lager/)){
+	var storeLevel = document.evaluate('//*[@id="mainRight"]/table/tbody/tr[21]/td[2]', document, null, XPathResult.STRING_TYPE).stringValue;
+	storeLevel = storeLevel.match(/\([0-9]+\)/);
+	storeLevel = parseInt(storeLevel[0].substring(1, storeLevel[0].length-1));
+	storeData("storeLevel", storeLevel);
+	console.log(storeLevel);
+} else{
+	var h1 = document.getElementById("building_name");
+	if(h1){
+		var match = h1.textContent.match("Lager Stufe ([0-9]+)");
+		if(match){
+			var storeLevel = parseInt(match[1]);
+			storeData("storeLevel", storeLevel);
+			console.log(storeLevel);
 		}
 	}
 }
