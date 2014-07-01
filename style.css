@@ -118,3 +118,11 @@ pre {
 	margin: 2em auto;
 	overflow-x: auto;
 }
+
+span.gender, span.level {
+	cursor: pointer;
+}
+
+span.gender:hover, span.level:hover {
+	background-color: #DDDDDD;
+}

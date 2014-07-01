@@ -36,43 +36,101 @@ function getComparator(position){
 	}
 }
 
-window.addEventListener("load", function(){
-	var guild = getData("guild");
-	var team = getData("team");
+function createInteraction(el, name, field, values, valuesString){
+	el.addEventListener('click', function(){
+		var value = false;
+		do{
+			value = prompt('Bitte '+name+' von '+this.getAttribute('data-name')+' eingeben ('+valuesString+')');
+			if(value === null){
+				console.log('interaction abortet');
+				return;
+			}
+		}while(values.length > 0 && values.indexOf(value) < 0);
+
+		var dragonData = getData('dragonData');
+		dragonData[this.getAttribute('data-url')][field] = value;
+		storeData('dragonData', dragonData);
+		printDragons();
+	});
+}
+
+function getHighlightStart(highlight){
+	switch(highlight) {
+		case 'b':
+		case 'bold':
+			return '[b]';
+		case 'i':
+		case 'italics':
+			return '[i]';
+		default:
+			if(highlight && highlight.match(/^[0-9A-F]{6}$/)){
+				return '[color='+highlight+']';
+			} else {
+				return '';
+			}
+	}
+}
+
+function getHighlightEnd(highlight){
+	switch(highlight) {
+		case 'b':
+		case 'bold':
+			return '[/b]';
+		case 'i':
+		case 'italics':
+			return '[/i]';
+		default:
+			if(highlight && highlight.match(/^[0-9A-F]{6}$/)){
+				return '[/color]';
+			} else {
+				return '';
+			}
+	}
+}
+
+function printDragons(){
+	var guild = getData('guild');
+	var team = getData('team');
+	var dragonData = getData('dragonData') || {};
 
 	if(guild && team){
-		var text = "";
+		var text = '';
 
 		var positions = {
 			AA: {
-				skills: ["feuerkraft", "geschick"],
+				skills: ['feuerkraft', 'geschick'],
 				dragons: []
 			},
 			AM: {
-				skills: ["feuerkraft", "kraft"],
+				skills: ['feuerkraft', 'kraft'],
 				dragons: []
 			},
 			MA: {
-				skills: ["intelligenz", "geschick"],
+				skills: ['intelligenz', 'geschick'],
 				dragons: []
 			},
 			VM: {
-				skills: ["willenskraft", "kraft"],
+				skills: ['willenskraft', 'kraft'],
 				dragons: []
 			},
 			VA: {
-				skills: ["willenskraft", "intelligenz"],
+				skills: ['willenskraft', 'intelligenz'],
 				dragons: []
 			},
 			T: {
-				skills: ["willenskraft", "geschick"],
+				skills: ['willenskraft', 'geschick'],
 				dragons: []
 			}
 		}
 
 		for(var i = 0; i < team.length; i++){
 			var dragon = team[i];
-			
+
+			if(!dragonData[dragon.url]){
+				dragonData[dragon.url] = {};
+			}
+			storeData('dragonData', dragonData);
+
 			var max = -Infinity;
 			var bestPosition;
 			for(var key in positions){
@@ -91,43 +149,87 @@ window.addEventListener("load", function(){
 			var position = positions[key];
 			position.dragons.sort(getComparator(position));
 			
-			text += "\n[b]";
+			text += '\n[b]';
 			text += key;
-			text += "[/b]\n";
+			text += '[/b]\n';
 
 			for (var i = 0; i < position.dragons.length; i++) {
 				var dragon = position.dragons[i]
-				
+				var addIn = dragonData[dragon.url];
+
+				text += '<span class="highlight" ';
+				text += 'data-url="'+dragon.url+'" ';
+				text += 'data-name="'+dragon.name+'" ';
+				text += '>';
+
+				text += getHighlightStart(addIn.highlight);
 				text += getDBP(dragon, position);
-				text += " -- ";
-				text += "?",
-				text += " -- ";
-				text += "[url=" + dragon.url + "]";
+				text += ' -- ';
+				text += '<span class="level" ';
+				text += 'data-url="'+dragon.url+'" ';
+				text += 'data-name="'+dragon.name+'" ';
+				text += '>';
+				if(addIn.level){
+					text += addIn.level;
+				} else {
+					text += '?';
+				}
+				text += '</span>'
+				text += ' -- ';
+				text += '[url=' + dragon.url + ']';
 				text += dragon.name;
-				text += "[/url]";
-				text += "/?"
-				text += " -- ";
+				text += '[/url]/';
+				if(addIn.gender){
+					text += addIn.gender;
+				} else {
+					text += '<span class="gender" '
+					text += 'data-url="'+dragon.url+'" '
+					text += 'data-name="'+dragon.name+'" '
+					text += '>?</span>';
+				}
+				text += ' -- ';
 				text += dragon.kraft;
-				text += " / ";
+				text += ' / ';
 				text += dragon.geschick;
-				text += " / ";
+				text += ' / ';
 				text += dragon.feuerkraft;
-				text += " / ";
+				text += ' / ';
 				text += dragon.willenskraft;
-				text += " / ";
+				text += ' / ';
 				text += dragon.intelligenz;
-				text += " --- ";
-				text += dragon.fitness + "%";
-				text += " -- ";
-				text += "[user]";
+				text += ' --- ';
+				text += dragon.fitness + '%';
+				text += ' -- ';
+				text += '[user]';
 				text += guild.byDragon[dragon.url];
-				text += "[/user]";
-				text += "\n";
+				text += '[/user]';
+				text += getHighlightEnd(addIn.highlight);
+				text += '</span>';
+				text += '\n';
 
 			};
 		}
 
-		var markupElement = document.getElementById("markup");
-		markupElement.textContent = text;
-	}
+		var markupElement = document.getElementById('markup');
+		markupElement.innerHTML = text;
+
+		var spans = markupElement.getElementsByClassName('gender');
+		for (var i = 0; i < spans.length; i++) {
+			createInteraction(spans[i], 'Geschlecht', 'gender', ['m','w'], 'm/w');
+		};
+
+		var spans = markupElement.getElementsByClassName('level');
+		for (var i = 0; i < spans.length; i++) {
+			createInteraction(spans[i], 'Level', 'level', ['0','1','2','3','4','5'], '0-5');
+		};
+
+		var spans = markupElement.getElementsByClassName('highlight');
+		for (var i = 0; i < spans.length; i++) {
+			createInteraction(spans[i], 'Hervorhebung', 'highlight', [], 'b(old), i(talics), hex-color(z.B.: FF0000), none, empty');
+		};
+	}	
+}
+
+window.addEventListener('load', function(){
+	printDragons();
 });
