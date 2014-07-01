@@ -6,7 +6,7 @@
 
 body {
 	background-color: #F8F2EC;
-	margin: 0;
+	margin-top: 1em;
 	position:relative;
 	font-family: sans-serif;
 }
@@ -85,10 +85,18 @@ td:first-child{
 }
 
 button {
-	background-color: #e6dcd2;
+	background-color: #F8F2EC;
 	border-color: #b38659;
 	border-width: 2px;
-	border-style: outset;	
+	border-style: outset;
+	border-radius: 5px;
+	margin: auto;
+	display: block;
+	padding: 0.3em;	
+}
+
+button:hover {
+	background-color: #e6dcd2;
 }
 
 button:active {
@@ -100,7 +108,6 @@ td button {
 	margin-left: 1.61803em;
 	margin-right: 1.61803em;
 	width:	-webkit-calc(100% - 3.23606em); 
-	height: 1.61803em;
 }
 
 pre {

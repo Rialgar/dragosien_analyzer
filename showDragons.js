@@ -275,4 +275,7 @@ function printDragons(){
 
 window.addEventListener('load', function(){
 	printDragons();
+	document.getElementById('copy').addEventListener('click', function(){
+		window.getSelection().selectAllChildren(document.getElementById("markup"));
+	});
 });
