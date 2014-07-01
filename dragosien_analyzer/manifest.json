@@ -1,6 +1,6 @@
 {
   "name": "Dragosien Analyzer",
-  "version": "1.0",
+  "version": "0.1",
   "manifest_version": 2,
   "description": "Reads information from dragosien.de while playing and aggregates it.",
   
