@@ -8,15 +8,7 @@ body {
 	background-color: #F8F2EC;
 	margin: 0;
 	position:relative;
-	font-family: sans-serif
-}
-
-body > div{
-	/*background-color: #DBD1C8;*/
-	margin: auto;
-	/*padding: 1em;*/
-	position: relative;
-	/*width: 80em;*/
+	font-family: sans-serif;
 }
 
 table {
@@ -129,4 +121,44 @@ span.gender:hover, span.level:hover {
 
 span.highlight:hover {
 	background-color: #EEEEEE;
+}
+
+div.onOff {
+	margin: 2em auto;
+	width: 90%;
+	overflow: auto;
+}
+
+div.onOff>div {
+	text-align: center;
+	width: 49%;
+}
+
+div.onOff>div>div:first-child {
+	background-color: #3C1E00;
+	color: #F8F2EC;
+	cursor: default;
+}
+
+div.onOff>div>div:first-child:hover {
+	background-color: #3C1E00;
+}
+
+div.onOff>div>div {
+	margin: 0.2em;
+	border: 2px solid #3C1E00;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+div.onOff>div>div:hover {
+	background-color: #C9B9AC
+}
+
+div#displayed {
+	float: left;
+}
+
+div#hidden {
+	float: right;
 }

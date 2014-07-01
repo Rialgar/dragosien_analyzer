@@ -132,13 +132,42 @@ function printDragons(){
 			}
 		}
 
+		var hiddenList = document.getElementById("hidden");
+		var first = hiddenList.firstElementChild;
+		hiddenList.removeAllChildren();
+		hiddenList.appendChild(first);
+		var displayedList = document.getElementById("displayed");
+		var first = displayedList.firstElementChild;
+		displayedList.removeAllChildren();
+		displayedList.appendChild(first);
+
+		team.sort(function(A,B){
+			return A.name < B.name ? -1 : (A.name > B.name ? 1 : 0);
+		});
+
 		for(var i = 0; i < team.length; i++){
 			var dragon = team[i];
 
 			if(!dragonData[dragon.url]){
 				dragonData[dragon.url] = {};
 			}
-			storeData('dragonData', dragonData);
+
+			var hideDiv = document.createElement("div");
+			hideDiv.textContent = dragon.name;
+			hideDiv.setAttribute("data-url", dragon.url);
+			hideDiv.addEventListener("click", function(){
+				var url = this.getAttribute("data-url");
+				var dragonData = getData("dragonData");
+				dragonData[url].hidden = !dragonData[url].hidden;
+				storeData("dragonData", dragonData);
+				printDragons();
+			});
+
+			if(dragonData[dragon.url].hidden){
+				hiddenList.appendChild(hideDiv);
+			} else {
+				displayedList.appendChild(hideDiv);
+			}
 
 			var max = -Infinity;
 			var bestPosition;
@@ -153,6 +182,7 @@ function printDragons(){
 
 			bestPosition.dragons.push(dragon);
 		}
+		storeData('dragonData', dragonData);
 
 		for(var key in positions){
 			var position = positions[key];
@@ -169,56 +199,57 @@ function printDragons(){
 				var dragon = position.dragons[i]
 				var addIn = dragonData[dragon.url];
 
-				text += '<span class="highlight" ';
-				text += 'data-url="'+dragon.url+'" ';
-				text += 'data-name="'+dragon.name+'" ';
-				text += '>';
+				if(!addIn.hidden){
+					text += '<span class="highlight" ';
+					text += 'data-url="'+dragon.url+'" ';
+					text += 'data-name="'+dragon.name+'" ';
+					text += '>';
 
-				text += getHighlightStart(addIn.highlight);
-				text += getDBP(dragon, position);
-				text += ' -- ';
-				text += '<span class="level" ';
-				text += 'data-url="'+dragon.url+'" ';
-				text += 'data-name="'+dragon.name+'" ';
-				text += '>';
-				if(addIn.level){
-					text += addIn.level;
-				} else {
-					text += '?';
+					text += getHighlightStart(addIn.highlight);
+					text += getDBP(dragon, position);
+					text += ' -- ';
+					text += '<span class="level" ';
+					text += 'data-url="'+dragon.url+'" ';
+					text += 'data-name="'+dragon.name+'" ';
+					text += '>';
+					if(addIn.level){
+						text += addIn.level;
+					} else {
+						text += '?';
+					}
+					text += '</span>'
+					text += ' -- ';
+					text += '[url=' + dragon.url + ']';
+					text += dragon.name;
+					text += '[/url]/';
+					if(addIn.gender){
+						text += addIn.gender;
+					} else {
+						text += '<span class="gender" '
+						text += 'data-url="'+dragon.url+'" '
+						text += 'data-name="'+dragon.name+'" '
+						text += '>?</span>';
+					}
+					text += ' -- ';
+					text += dragon.kraft;
+					text += ' / ';
+					text += dragon.geschick;
+					text += ' / ';
+					text += dragon.feuerkraft;
+					text += ' / ';
+					text += dragon.willenskraft;
+					text += ' / ';
+					text += dragon.intelligenz;
+					text += ' --- ';
+					text += dragon.fitness + '%';
+					text += ' -- ';
+					text += '[user]';
+					text += guild.byDragon[dragon.url];
+					text += '[/user]';
+					text += getHighlightEnd(addIn.highlight);
+					text += '</span>';
+					text += '\n';
 				}
-				text += '</span>'
-				text += ' -- ';
-				text += '[url=' + dragon.url + ']';
-				text += dragon.name;
-				text += '[/url]/';
-				if(addIn.gender){
-					text += addIn.gender;
-				} else {
-					text += '<span class="gender" '
-					text += 'data-url="'+dragon.url+'" '
-					text += 'data-name="'+dragon.name+'" '
-					text += '>?</span>';
-				}
-				text += ' -- ';
-				text += dragon.kraft;
-				text += ' / ';
-				text += dragon.geschick;
-				text += ' / ';
-				text += dragon.feuerkraft;
-				text += ' / ';
-				text += dragon.willenskraft;
-				text += ' / ';
-				text += dragon.intelligenz;
-				text += ' --- ';
-				text += dragon.fitness + '%';
-				text += ' -- ';
-				text += '[user]';
-				text += guild.byDragon[dragon.url];
-				text += '[/user]';
-				text += getHighlightEnd(addIn.highlight);
-				text += '</span>';
-				text += '\n';
-
 			};
 		}
 
