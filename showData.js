@@ -33,30 +33,36 @@ window.addEventListener("load",function(){
 	}
 	
 	data.states = getData("states");
-	data.levels = getData("levels");
-	
-	if(data.states && data.levels && data.prices){
-		/*var renovation_costs = 0;
+	data.buildings = getData("buildings");
+	data.storeLevel = getData("storeLevel");
+
+	if(data.states && data.buildings && data.storeLevel && data.prices){
+		var renovation_costs = 0;
 		var renovation_base = 0;
-		for(var key in data.states){
-			if(data.states.hasOwnProperty(key)){
-				var state = data.states[key];
-				var level = data.levels[key];
-				var costs = getData("buildingCosts_" + key);
-				if(costs && costs[level]){
-					for(var resource in costs[level]){
-						if(costs[level].hasOwnProperty(resource)){
-							var baseAmount = costs[level][resource] / 100; 
-							var amount = Math.ceil(baseAmount * (100 - state));
-							renovation_costs += amount * data.prices[resource];
-							renovation_base += baseAmount * data.prices[resource];
-						}
-					}			
-				}else if(state != 100){
-					renovation_costs = -1;
-					break;
-				}				
+		for(var i = 0; i < data.states.length; i++){
+			var name, level;
+			if(i < data.buildings.length){
+				name = data.buildings[i].name;
+				level = data.buildings[i].level;
+			} else {
+				name = "Lager";
+				level = data.storeLevel;
 			}
+			var state = data.states[i];
+			var costs = getData("buildingCosts_" + name);
+			if(costs && costs[level]){
+				for(var resource in costs[level]){
+					if(costs[level].hasOwnProperty(resource)){
+						var baseAmount = costs[level][resource] / 100; 
+						var amount = Math.ceil(baseAmount * (100 - state));
+						renovation_costs += amount * data.prices[resource];
+						renovation_base += baseAmount * data.prices[resource];
+					}
+				}			
+			}else if(state != 100){
+				renovation_costs = -1;
+				break;
+			}			
 		}
 		if(renovation_costs >= 0){
 			renovationCostsNode.removeAllChildren();
@@ -68,7 +74,7 @@ window.addEventListener("load",function(){
 			renovationBaseNode.appendChild(
 				document.createTextNode(formatNumber(Math.round(renovation_base / 72)))
 			);
-		}*/
+		}
 	}
 	
 	//set the details-button script

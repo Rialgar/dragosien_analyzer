@@ -315,13 +315,12 @@ if(village){
 	}
 	storeData("buildings", buildings);
 }
-//-----------------------------READ Store Level---------------------------------
+//-----------------------------READ STORE LEVEL---------------------------------
 if(document.evaluate('//*[@id="mainRight"]/table/tbody/tr[21]/td[1]', document, null, XPathResult.STRING_TYPE).stringValue.match(/Lager/)){
 	var storeLevel = document.evaluate('//*[@id="mainRight"]/table/tbody/tr[21]/td[2]', document, null, XPathResult.STRING_TYPE).stringValue;
 	storeLevel = storeLevel.match(/\([0-9]+\)/);
 	storeLevel = parseInt(storeLevel[0].substring(1, storeLevel[0].length-1));
 	storeData("storeLevel", storeLevel);
-	console.log(storeLevel);
 } else{
 	var h1 = document.getElementById("building_name");
 	if(h1){
@@ -329,7 +328,6 @@ if(document.evaluate('//*[@id="mainRight"]/table/tbody/tr[21]/td[1]', document, 
 		if(match){
 			var storeLevel = parseInt(match[1]);
 			storeData("storeLevel", storeLevel);
-			console.log(storeLevel);
 		}
 	}
 }

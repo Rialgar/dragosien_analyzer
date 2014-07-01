@@ -54,106 +54,112 @@ window.addEventListener("load",function(){
 	}
 	
 	data.states = getData("states");
-	data.levels = getData("levels");
+	data.buildings = getData("buildings");
+	data.storeLevel = getData("storeLevel");
 	data.buildingProduction = getData("buildingProduction")
 	data.buildingConsumption = getData("buildingConsumption")
 	
-	if(data.states && data.levels && data.prices){
-		/*var renovation_costs_sum = 0;
+	if(data.states && data.buildings && data.storeLevel && data.prices){
+		var renovation_costs_sum = 0;
 		var renovation_base_sum = 0;
 		var production_sum = 0;
 		var consumption_sum = [0,0];
 		var profit_sum = 0;
 		
-		for(var key in data.levels){
-			if(data.levels.hasOwnProperty(key)){
-				if(key == "Arena") continue;
-
-				var state = data.states[key];
-				var level = data.levels[key];
-				var bProd = data.buildingProduction[key];
-				var bCons = data.buildingConsumption[key];
-				
-				var costs = getData("buildingCosts_" + key);
-				var renovation_costs = 0;
-				var renovation_base = 0;
-				var renovation_base_next = 0;
-				var expansion_costs = 0;
-
-				if(level>0 && costs && costs[level]){
-					for(var resource in costs[level]){
-						if(costs[level].hasOwnProperty(resource)){
-							var baseAmount = costs[level][resource] / 100; 
-							var amount = Math.ceil(baseAmount * (100 - state));
-							renovation_costs += amount * data.prices[resource];
-							renovation_base += baseAmount * data.prices[resource] / 72;
-
-						}
-					}
-					for(var resource in costs[level+1]){
-						if(costs[level+1].hasOwnProperty(resource)){
-							expansion_costs += costs[level+1][resource] *  data.prices[resource];
-							var baseAmount = costs[level+1][resource] / 100; 
-							var amount = Math.ceil(baseAmount * (100 - state));
-							renovation_base_next += baseAmount * data.prices[resource] / 72;
-
-						}
-					}			
-				}
-				var baseProduction = 0;
-				var lvlProduction = 0;
-				var nextProduction = 0;
-				var consumption = [{name:"",base:0, lvl:0, next:0},{name:"", base:0, lvl:0, next:0}];
-
-				if(bProd && data.prices[bProd.name]){
-					baseProduction = bProd.amount * data.prices[bProd.name];
-					lvlProduction = level === 0 ? 0 : baseProduction * (level+1);
-					nextProduction = baseProduction * (level+2);
-				}
-				var c = 0;
-			
-				if(bCons){
-					for(var resource in bCons){
-						if(bCons.hasOwnProperty(resource)){
-							consumption[c].name = resource;
-							consumption[c].base = bCons[resource] * data.prices[resource];
-							consumption[c].lvl = level === 0 ? 0 : consumption[c].base * (level+1);
-							consumption[c].next = consumption[c].base * (level+2);
-							c++;
-						}
-					}
-				}
-				
-				var profit = lvlProduction - consumption[0].lvl - consumption[1].lvl;
-				var nextProfit = nextProduction - consumption[0].next - consumption[1].next;
-
-				var breakEven = expansion_costs / (nextProfit - profit - (renovation_base_next - renovation_base));
-
-				renovation_costs_sum += renovation_costs;
-				renovation_base_sum += renovation_base;
-				if(lvlProduction > 0){
-					production_sum += lvlProduction;
-					consumption_sum[0] += consumption[0].lvl;
-					consumption_sum[1] += consumption[1].lvl; 
-					profit_sum += profit;	
-				}			                               
-				
-				buildingNode.appendChild(createTableRow([
-					key,
-					bProd ? bProd.name : "",
-					consumption[0].name,
-					consumption[1].name,
-					formatNumber(level),
-					formatNumber(lvlProduction),
-					formatNumber(consumption[0].lvl),
-					formatNumber(consumption[1].lvl),
-					profit > 0 ? formatNumber(profit) : "0",
-					formatNumber(renovation_costs),
-					formatNumber(renovation_base),
-					breakEven >= 0 ? formatNumber(breakEven/24): "nicht anwendbar"
-				]));				
+		for(var i = 0; i < data.states.length; i++){
+			var name, level;
+			if(i < data.buildings.length){
+				name = data.buildings[i].name;
+				level = data.buildings[i].level;
+			} else {
+				name = "Lager";
+				level = data.storeLevel;
 			}
+			var state = data.states[i];
+
+			var bProd = data.buildingProduction[name];
+			var bCons = data.buildingConsumption[name];
+			
+			var costs = getData("buildingCosts_" + name);
+			var renovation_costs = 0;
+			var renovation_base = 0;
+			var renovation_base_next = 0;
+			var expansion_costs = 0;
+
+			if(level>0 && costs && costs[level]){
+				for(var resource in costs[level]){
+					if(costs[level].hasOwnProperty(resource)){
+						var baseAmount = costs[level][resource] / 100; 
+						var amount = Math.ceil(baseAmount * (100 - state));
+						renovation_costs += amount * data.prices[resource];
+						renovation_base += baseAmount * data.prices[resource] / 72;
+
+					}
+				}
+				for(var resource in costs[level+1]){
+					if(costs[level+1].hasOwnProperty(resource)){
+						expansion_costs += costs[level+1][resource] *  data.prices[resource];
+						var baseAmount = costs[level+1][resource] / 100; 
+						var amount = Math.ceil(baseAmount * (100 - state));
+						renovation_base_next += baseAmount * data.prices[resource] / 72;
+
+					}
+				}			
+			}
+			var baseProduction = 0;
+			var lvlProduction = 0;
+			var nextProduction = 0;
+			var consumption = [{name:"",base:0, lvl:0, next:0},{name:"", base:0, lvl:0, next:0}];
+
+			if(bProd && data.prices[bProd.name]){
+				baseProduction = bProd.amount * data.prices[bProd.name];
+				lvlProduction = level === 0 ? 0 : baseProduction * (level+1);
+				nextProduction = baseProduction * (level+2);
+			}
+			var c = 0;
+		
+			if(bCons){
+				for(var resource in bCons){
+					if(bCons.hasOwnProperty(resource)){
+						consumption[c].name = resource;
+						consumption[c].base = bCons[resource] * data.prices[resource];
+						consumption[c].lvl = level === 0 ? 0 : consumption[c].base * (level+1);
+						consumption[c].next = consumption[c].base * (level+2);
+						c++;
+					}
+				}
+			}
+			
+			var profit = lvlProduction - consumption[0].lvl - consumption[1].lvl;
+			var nextProfit = nextProduction - consumption[0].next - consumption[1].next;
+
+			var breakEven = expansion_costs / (nextProfit - profit - (renovation_base_next - renovation_base));
+
+			renovation_costs_sum += renovation_costs;
+			renovation_base_sum += renovation_base;
+			if(lvlProduction > 0){
+				production_sum += lvlProduction;
+				consumption_sum[0] += consumption[0].lvl;
+				consumption_sum[1] += consumption[1].lvl; 
+				profit_sum += profit;	
+			}			                               
+			
+			buildingNode.appendChild(createTableRow([
+				name,
+				bProd ? bProd.name : "",
+				consumption[0].name,
+				consumption[1].name,
+				formatNumber(level),
+				formatNumber(lvlProduction),
+				formatNumber(consumption[0].lvl),
+				formatNumber(consumption[1].lvl),
+				profit > 0 ? formatNumber(profit) : "0",
+				formatNumber(renovation_costs),
+				formatNumber(renovation_base),
+				breakEven >= 0 ? formatNumber(breakEven/24): "nicht anwendbar"
+			]));				
 		}
+
 		buildingNode.appendChild(createTableRow([
 			"",
 			"",
@@ -167,7 +173,7 @@ window.addEventListener("load",function(){
 			formatNumber(renovation_costs_sum),
 			formatNumber(renovation_base_sum),
 			""
-			]));*/
+		]));
 	}
 
 	if(data.prices){
