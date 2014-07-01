@@ -37,7 +37,10 @@ function getComparator(position){
 }
 
 function createInteraction(el, name, field, values, valuesString){
-	el.addEventListener('click', function(){
+	el.addEventListener('click', function(event){
+		event.preventDefault();
+		event.cancelBubble = true;
+		event.stopPropagation();
 		var value = false;
 		do{
 			value = prompt('Bitte '+name+' von '+this.getAttribute('data-name')+' eingeben ('+valuesString+')');
@@ -99,27 +102,33 @@ function printDragons(){
 		var positions = {
 			AA: {
 				skills: ['feuerkraft', 'geschick'],
-				dragons: []
+				dragons: [],
+				positions: '(Pos. 9+11)'
 			},
 			AM: {
 				skills: ['feuerkraft', 'kraft'],
-				dragons: []
+				dragons: [],
+				positions: '(Pos. 8+10)'
 			},
 			MA: {
 				skills: ['intelligenz', 'geschick'],
-				dragons: []
+				dragons: [],
+				positions: '(Pos. 6+7)'
 			},
 			VM: {
 				skills: ['willenskraft', 'kraft'],
-				dragons: []
+				dragons: [],
+				positions: '(Pos. 3+5)'
 			},
 			VA: {
 				skills: ['willenskraft', 'intelligenz'],
-				dragons: []
+				dragons: [],
+				positions: '(Pos. 2+4)'
 			},
 			T: {
 				skills: ['willenskraft', 'geschick'],
-				dragons: []
+				dragons: [],
+				positions: '(Pos. 1)'
 			}
 		}
 
@@ -149,9 +158,12 @@ function printDragons(){
 			var position = positions[key];
 			position.dragons.sort(getComparator(position));
 			
-			text += '\n[b]';
+			text += '\n';
+			text += '[b]';
 			text += key;
-			text += '[/b]\n';
+			text += '[/b]';
+			text += ' ' + position.positions;
+			text += '\n';
 
 			for (var i = 0; i < position.dragons.length; i++) {
 				var dragon = position.dragons[i]

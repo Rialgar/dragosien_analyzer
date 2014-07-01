@@ -126,3 +126,7 @@ span.gender, span.level {
 span.gender:hover, span.level:hover {
 	background-color: #DDDDDD;
 }
+
+span.highlight:hover {
+	background-color: #EEEEEE;
+}
