@@ -79,7 +79,7 @@ window.addEventListener("load",function(){
 	}
 	
 	//set the details-button script
-	if( renovation_costs >= 0 ){
+	if(renovation_costs >= 0){
 		document.getElementById("details").addEventListener("click",function(){
 			chrome.tabs.create({
 				url: "details.xhtml",
@@ -93,6 +93,7 @@ window.addEventListener("load",function(){
 	data.team = getData("team");
 	data.guild = getData("guild");
 
+	//set the team button script
 	if( data.team && data.guild ){
 		document.getElementById("details").addEventListener("click",function(){
 			chrome.tabs.create({
