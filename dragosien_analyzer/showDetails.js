@@ -32,8 +32,8 @@ window.addEventListener("load",function(){
 					formatNumber(store_value),
 					formatNumber(data.production[key].plus),
 					formatNumber(production_value),
-					formatNumber(data.production[key].minus),
-					formatNumber(consumption_value),
+					formatNumber(-data.production[key].minus),
+					formatNumber(-consumption_value),
 					formatNumber(data.production[key].plus + data.production[key].minus),					
 					formatNumber(production_value + consumption_value)								
 					]));
@@ -92,7 +92,7 @@ window.addEventListener("load",function(){
 						var baseAmount = costs[level][resource] / 100; 
 						var amount = Math.ceil(baseAmount * (100 - state));
 						renovation_costs += amount * data.prices[resource];
-						renovation_base += baseAmount * data.prices[resource] / 72;
+						renovation_base += name === "Arena" ? 0 : baseAmount * data.prices[resource] / 72;
 
 					}
 				}
@@ -151,8 +151,8 @@ window.addEventListener("load",function(){
 				consumption[1].name,
 				formatNumber(level),
 				formatNumber(lvlProduction),
-				formatNumber(consumption[0].lvl),
-				formatNumber(consumption[1].lvl),
+				formatNumber(-consumption[0].lvl),
+				formatNumber(-consumption[1].lvl),
 				profit > 0 ? formatNumber(profit) : "0",
 				formatNumber(renovation_costs),
 				formatNumber(renovation_base),
@@ -178,7 +178,7 @@ window.addEventListener("load",function(){
 
 	if(data.prices){
 		var keys = getData("allBuildingNames")
-		for (var i = 0; i <= keys.length; i++) {
+		for (var i = 0; i < keys.length; i++) {
 			var key = keys[i];
 
 			var bProd = data.buildingProduction[key];

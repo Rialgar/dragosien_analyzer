@@ -79,7 +79,7 @@ window.addEventListener("load",function(){
 	}
 	
 	//set the details-button script
-	if(renovation_costs >= 0){
+	if(data.states && data.buildings && data.storeLevel && data.prices && data.renovation_costs >= 0){
 		document.getElementById("details").addEventListener("click",function(){
 			chrome.tabs.create({
 				url: "details.xhtml",
