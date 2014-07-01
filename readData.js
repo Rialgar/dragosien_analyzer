@@ -332,7 +332,7 @@ if(document.evaluate('//*[@id="mainRight"]/table/tbody/tr[21]/td[1]', document, 
 	}
 }
 //---------------------------READ DRAGON DATA------------------------------------
-if(window.location.search.indexOf("guild_arena") >= 0){
+if(window.location.search.match(/t=guild_arena(?!&tab=[1-9])/)){
 	console.log("found team");
 	var team = [];
 	var teamElement = document.getElementById("mannschaft");
@@ -355,3 +355,22 @@ if(window.location.search.indexOf("guild_arena") >= 0){
 	storeData("team", team);
 }
 //-------------------------READ GUILD MEMBERS------------------------------------
+if(window.location.search.match(/t=guild_hall(?!&tab=[1-9])/)){
+	console.log("found guild members");
+	var guild = {};
+	guild.byPlayer = {};
+	guild.byDragon = {};
+	var memberList = document.getElementsByClassName("member_list");
+	for (var i = 0; i < memberList.length; i++) {
+		var anchors = memberList[i].getElementsByTagName("a");
+		var dragonList = [];
+		var player = anchors[0].textContent;
+		for (var j = 0; j < anchors.length; j++) {
+			var dragonUrl = anchors[j].href;
+			dragonList.push(dragonUrl);
+			guild.byDragon[dragonUrl] = player;
+		};
+		guild.byPlayer[player] = dragonList;
+	}
+	storeData("guild", guild);
+}

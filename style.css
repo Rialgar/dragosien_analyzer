@@ -110,3 +110,11 @@ td button {
 	width:	-webkit-calc(100% - 3.23606em); 
 	height: 1.61803em;
 }
+
+pre {
+	background-color: white;
+	color: black;
+	width: 90%;
+	margin: 2em auto;
+	overflow-x: auto;
+}

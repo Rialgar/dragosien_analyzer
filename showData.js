@@ -95,7 +95,7 @@ window.addEventListener("load",function(){
 
 	//set the team button script
 	if( data.team && data.guild ){
-		document.getElementById("details").addEventListener("click",function(){
+		document.getElementById("team").addEventListener("click",function(){
 			chrome.tabs.create({
 				url: "team.xhtml",
 				openerTabId: parseInt(localStorage.lastTab)
