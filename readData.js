@@ -331,3 +331,27 @@ if(document.evaluate('//*[@id="mainRight"]/table/tbody/tr[21]/td[1]', document, 
 		}
 	}
 }
+//---------------------------READ DRAGON DATA------------------------------------
+if(window.location.search.indexOf("guild_arena") >= 0){
+	console.log("found team");
+	var team = [];
+	var teamElement = document.getElementById("mannschaft");
+	var divs = teamElement.getElementsByTagName("div");
+	var dragonCount = (divs.length-4)/10;
+	for(var i = 0; i < dragonCount; i++){
+		var base = 10*i + 4;
+		team.push({
+			name: 			divs[base].textContent,
+			url: 			divs[base].firstElementChild.href,
+			kraft: 			parseInt(divs[base + 1].textContent),
+			geschick: 		parseInt(divs[base + 2].textContent),
+			feuerkraft: 	parseInt(divs[base + 3].textContent),
+			willenskraft: 	parseInt(divs[base + 4].textContent),
+			intelligenz: 	parseInt(divs[base + 5].textContent),
+			fitness: 		parseInt(divs[base + 6].textContent),
+			vitalitaet:		parseInt(divs[base + 7].textContent)
+		});
+	}
+	storeData("team", team);
+}
+//-------------------------READ GUILD MEMBERS------------------------------------

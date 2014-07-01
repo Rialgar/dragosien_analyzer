@@ -36,9 +36,10 @@ window.addEventListener("load",function(){
 	data.buildings = getData("buildings");
 	data.storeLevel = getData("storeLevel");
 
+
+	var renovation_costs = 0;
+	var renovation_base = 0;
 	if(data.states && data.buildings && data.storeLevel && data.prices){
-		var renovation_costs = 0;
-		var renovation_base = 0;
 		for(var i = 0; i < data.states.length; i++){
 			var name, level;
 			if(i < data.buildings.length){
@@ -78,11 +79,28 @@ window.addEventListener("load",function(){
 	}
 	
 	//set the details-button script
-	document.getElementById("details").addEventListener("click",function(){
-		chrome.tabs.create({
-			url: "details.xhtml",
-			openerTabId: parseInt(localStorage.lastTab)
+	if( renovation_costs >= 0 ){
+		document.getElementById("details").addEventListener("click",function(){
+			chrome.tabs.create({
+				url: "details.xhtml",
+				openerTabId: parseInt(localStorage.lastTab)
+			});
 		});
-	});
+	} else {
+		document.getElementById("details").disabled = "disabled";
+	}
 	
+	data.team = getData("team");
+	data.guild = getData("guild");
+
+	if( data.team && data.guild ){
+		document.getElementById("details").addEventListener("click",function(){
+			chrome.tabs.create({
+				url: "team.xhtml",
+				openerTabId: parseInt(localStorage.lastTab)
+			});
+		});
+	}else{
+		document.getElementById("team").disabled = "disabled";
+	}
 });
