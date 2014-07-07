@@ -1,0 +1,1 @@
+This is a simple plugin for Google Chrome, that reads data from the webpages of the Browsergame dragosien.de and presents them in an aggregated format.
