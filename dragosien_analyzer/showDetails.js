@@ -215,6 +215,17 @@ window.addEventListener("load",function(){
 				base_profit > 0 ? formatNumber(base_profit) : "0"
 			]));
 		}
+
+		baseNode.appendChild(createTableRow([
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				"",
+				""
+			]));
 	}
 
 });
