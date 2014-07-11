@@ -145,29 +145,37 @@ if(window.location.search.match(/t=chat_dragball/)){
 
 	var mo;
 	function startListener(field){
-		var last;
+		var last = "";
 		mo = new MutationObserver(function(e){
 			var brs = e[0].target.getElementsByTagName("br");
-			var el;
 			if(brs.length == 0){
 				return;
 			}
-			if(brs.length >= 2){
-				var el = brs[brs.length-2].nextSibling;
-			} else {
-				el = e[0].target.firstChild;
-			}
+			var index = 0;
+			var br = brs[index];
+			var el = e[0].target.firstChild;
 			var text = "";
 			var elements = [];
-			if(el.nextSibling.textContent == "Kommentator:"){
-				for(; el && el != brs[brs.length-1]; el = el.nextSibling){
+			while(text != last){
+				text = "";
+				for(; el && el != br; el = el.nextSibling){
+					text += el.textContent;
+				}
+				index++;
+				br = brs[index];
+				el = el.nextSibling;
+			}
+			while(index < brs.length){
+				text = "";
+				for(; el && el != br; el = el.nextSibling){
 					text += el.textContent;
 					elements.push(el);
 				}
-				if(text != last){
-					last = text;
-					processMessage(text, elements, field);
-				}
+				last = text;
+				processMessage(text, elements, field);
+				index++;
+				br = brs[index];
+				el = el.nextSibling;
 			}
 		});
 
