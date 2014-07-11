@@ -2,17 +2,17 @@ if(window.location.search.match(/t=chat_dragball/)){
 	var chat = document.getElementById("chat_content");
 
 	var circleCenters = [
-		{x: 40, y: 150},
-		{x: 160, y: 50},
-		{x: 110, y: 150},
-		{x: 160, y: 250},
-		{x: 260, y: 150},
-		{x: 360, y: 50},
-		{x: 360, y: 250},
-		{x: 460, y: 150},
-		{x: 560, y: 50},
-		{x: 610, y: 150},
-		{x: 560, y: 250}
+		{x: 40, y: 175},
+		{x: 160, y: 75},
+		{x: 110, y: 175},
+		{x: 160, y: 275},
+		{x: 260, y: 175},
+		{x: 360, y: 75},
+		{x: 360, y: 275},
+		{x: 460, y: 175},
+		{x: 560, y: 75},
+		{x: 610, y: 175},
+		{x: 560, y: 275}
 	]
 
 	function Dragon(team, position, name, strength){
@@ -32,7 +32,7 @@ if(window.location.search.match(/t=chat_dragball/)){
 		var cy = circleCenters[position].y;
 		if(team === "guest"){
 			cx = 740 - cx;
-			cy = 300 - cy;
+			cy = 350 - cy;
 		}
 		circle.setAttribute("cx", cx);
 		circle.setAttribute("cy", cy);
@@ -107,24 +107,24 @@ if(window.location.search.match(/t=chat_dragball/)){
 	Field.prototype.createDomElement = function(){
 		this.domElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		this.domElement.style.width = "740px";
-		this.domElement.style.height = "300px";
+		this.domElement.style.height = "350px";
 		this.domElement.setAttribute("width", 740);
-		this.domElement.setAttribute("height", 300);
+		this.domElement.setAttribute("height", 350);
 
-		var defHome = createEllipse(170, 150, 140, 145, "#CCCCCC", "#EEEEEE");
+		var defHome = createEllipse(170, 175, 140, 170, "#CCCCCC", "#EEEEEE");
 		this.domElement.appendChild(defHome);
-		var defGuest = createEllipse(570, 150, 140, 145, "#CCCCCC", "#EEEEEE");
+		var defGuest = createEllipse(570, 175, 140, 170, "#CCCCCC", "#EEEEEE");
 		this.domElement.appendChild(defGuest);
 		
-		var mid = createEllipse(370, 150, 140, 145, "#CCCCCC", "#FFFFFF");
+		var mid = createEllipse(370, 175, 140, 170, "#CCCCCC", "#FFFFFF");
 		this.domElement.appendChild(mid);
 
-		var penaltyHome = createEllipse(0, 150, 70, 100, "gray", "#CCCCCC");
+		var penaltyHome = createEllipse(0, 175, 70, 100, "gray", "#CCCCCC");
 		this.domElement.appendChild(penaltyHome);
-		var penaltyGuest = createEllipse(740, 150, 70, 100, "gray", "#CCCCCC");
+		var penaltyGuest = createEllipse(740, 175, 70, 100, "gray", "#CCCCCC");
 		this.domElement.appendChild(penaltyGuest);
 
-		var midLine = createLine(370, 5, 370, 295, "#CCCCCC");
+		var midLine = createLine(370, 5, 370, 395, "#CCCCCC");
 		this.domElement.appendChild(midLine);
 
 		for (var i = 0; i < this.lineup.home.length; i++) {
