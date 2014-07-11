@@ -1,5 +1,4 @@
 if(window.location.search.match(/t=chat_dragball/)){
-{
 	var chat = document.getElementById("chat_content");
 
 	function Field(lineupElement){
@@ -44,9 +43,11 @@ if(window.location.search.match(/t=chat_dragball/)){
 	};
 
 	Field.prototype.createDomElement = function(){
-		this.domElement = document.createElement("div");
+		this.domElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		this.domElement.style.width = "740px";
 		this.domElement.style.height = "300px";
+		this.domElement.setAttribute("width", "740");
+		this.domElement.setAttribute("height", "300");
 	}
 
 	function processMessage(text, elements, field){
@@ -132,5 +133,5 @@ if(window.location.search.match(/t=chat_dragball/)){
 	button.style.marginTop = "10px";
 	button.style.marginBottom = "10px";
 
-chat.parentElement.insertBefore(button, chat.parentElement.getElementsByTagName("h1")[1]);
+	chat.parentElement.insertBefore(button, chat.parentElement.getElementsByTagName("h1")[1]);
 }
