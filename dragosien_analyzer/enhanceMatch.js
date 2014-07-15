@@ -55,6 +55,10 @@ if(window.location.search.match(/t=chat_dragball/)){
 		text.textContent = this.short;
 		text.setAttribute("font-family", "Georgia");
 
+		var title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+		title.textContent = this.name;
+		this.domElement.appendChild(title);
+
 		if(this.position === 0){
 			if(team === "home"){
 				text.setAttribute("dominant-baseline", "text-after-edge");
