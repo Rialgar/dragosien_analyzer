@@ -1,7 +1,7 @@
 if(window.location.search.match(/t=chat_dragball/)){
 	var chat = document.getElementById("chat_content");
 
-	var circleCenters = [
+	var CIRCLE_CENTERS = [
 		{x: 40, y: 175},
 		{x: 160, y: 75},
 		{x: 130, y: 175},
@@ -13,7 +13,9 @@ if(window.location.search.match(/t=chat_dragball/)){
 		{x: 560, y: 75},
 		{x: 590, y: 175},
 		{x: 560, y: 275}
-	]
+	];
+
+	var BALL_COLOR = "rgb(212,175,55)";
 
 	function Dragon(team, position, name, strength){
 		if(this === window){
@@ -32,12 +34,14 @@ if(window.location.search.match(/t=chat_dragball/)){
 		this.hasBall = false;
 
 		this.domElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-		var cx = circleCenters[position].x;
-		var cy = circleCenters[position].y;
+		var cx = CIRCLE_CENTERS[position].x;
+		var cy = CIRCLE_CENTERS[position].y;
 		if(team === "guest"){
 			cx = 740 - cx;
 			cy = 350 - cy;
 		}
+		this.cx = cx;
+		this.cy = cy;
 		this.domElement.setAttribute("transform", "translate("+cx+","+cy+")");
 
 		var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -45,7 +49,7 @@ if(window.location.search.match(/t=chat_dragball/)){
 		circle.setAttribute("fill", team=="home" ? "red" : "blue");
 		circle.setAttribute("cx", 0);
 		circle.setAttribute("cy", 0);
-		circle.setAttribute("stroke", "rgb(212,175,55)");
+		circle.setAttribute("stroke", BALL_COLOR);
 		circle.setAttribute("stroke-width", 0);
 
 		this.domElement.appendChild(circle);
@@ -179,20 +183,120 @@ if(window.location.search.match(/t=chat_dragball/)){
 		var midLine = createLine(370, 5, 370, 395, "#CCCCCC");
 		this.domElement.appendChild(midLine);
 
+		this.dragonGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+		this.domElement.appendChild(this.dragonGroup);
+
 		for (var i = 0; i < this.lineup.home.length; i++) {
 			if(this.lineup.home[i]){
-				this.domElement.appendChild(this.lineup.home[i].domElement);
+				this.dragonGroup.appendChild(this.lineup.home[i].domElement);
 			}
 		};
 		for (var i = 0; i < this.lineup.guest.length; i++) {
 			if(this.lineup.guest[i]){
-				this.domElement.appendChild(this.lineup.guest[i].domElement);
+				this.dragonGroup.appendChild(this.lineup.guest[i].domElement);
 			}
 		};
 	}
 
+	Field.prototype.passTo = function(target, interceptor, interceptSucess) {
+		if(interceptor && interceptSucess){
+			this.passTo(interceptor);
+		} else {
+			if(this.activeDragon){
+				this.activeDragon.looseBall();
+				if(this.pass){
+					this.domElement.removeChild(this.pass);
+				}
+				this.pass = createLine(this.activeDragon.cx, this.activeDragon.cy, target.cx, target.cy, BALL_COLOR);
+				this.domElement.insertBefore(this.pass, this.dragonGroup);
+			}
+			if(target.constructor === Dragon){
+				this.activeDragon = target;
+				target.getBall();
+			} else {
+				this.activeDragon = false;
+			}
+		}
+	}
+
+	Field.prototype.shoot = function(dragon, result){
+		if(!this.activeDragon){
+			this.passTo(dragon);
+		}
+		var cx, cy, keeper;
+		cy = 175;
+		if(dragon.team === "home"){
+			cx = 740;
+			keeper = this.lineup.guest[0];
+		} else {
+			cy = 0;
+			keeper = this.lineup.home[0];
+		}
+		this.passTo({cx:cx,cy:cy}, keeper, !result.success);
+	}
+
+	Field.prototype.attackBy = function(attacker, success){
+		if(success){
+			this.passTo(attacker);
+		} else if (this.pass){
+			this.domElement.removeChild(this.pass);
+		}
+	}
+
+	Field.prototype.getDragon = function(team, position){
+		return this.lineup[team][position];
+	}
+
+	function match(pattern){
+
+	}
+
+	function patternize(elements){
+		var pattern = "";
+		var dragons = [];
+		for(var i = 2; i < elements.length; i++){
+			var e = elements[i];
+			if(e.nodeType === Element.TEXT_NODE){
+				if(e.textContent.match(/ [0-9]{1,2}(min)? - \([0-9]+:[0-9]+\) - /)){
+					pattern += "[SCORE]";
+				} else {
+					pattern += e.textContent;
+				}
+			} else if(e.tagName.toLowerCase() === "span"){
+				if ((e.classList.contains("team0") || e.classList.contains("team1"))) {
+					var dragon = e.textContent;
+					var id = dragons.indexOf(dragon);
+					if(id < 0){
+						id = dragons.push(dragon) - 1;
+					}
+					pattern += "[DRAGON-" + id + "]";
+				} else if (e.textContent.match("Pausenpfiff")) {
+					return "[BREAK]";
+				}
+			} else if(e.tagName.toLowerCase() == "i" && e.hasAttribute("res")){
+			} else if(e.tagName.toLowerCase() == "b"){
+				if(e.textContent.match(/TO+R!+/)){
+					pattern += "[GOAL]";
+				} else if(e.textContent.match(/[0-9]+:[0-9]+/)){
+					pattern += "[SCORE]";
+				} else {
+					debugger;
+				}
+			} else {
+				debugger;
+			}
+		}
+		return pattern;
+	}
+
 	function processMessage(text, elements, field){
-		console.log(text);
+		var pattern = patternize(elements);
+		var func = match(pattern);
+		if(func){
+			func(elements);
+		} else {
+			console.log("unkown pattern", pattern);
+		}	
 	}
 
 	var mo;
@@ -207,7 +311,6 @@ if(window.location.search.match(/t=chat_dragball/)){
 			var br = brs[index];
 			var el = e[0].target.firstChild;
 			var text = "";
-			var elements = [];
 			while(text != last){
 				text = "";
 				for(; el && el != br; el = el.nextSibling){
@@ -219,6 +322,7 @@ if(window.location.search.match(/t=chat_dragball/)){
 			}
 			while(index < brs.length){
 				text = "";
+				var elements = [];
 				for(; el && el != br; el = el.nextSibling){
 					text += el.textContent;
 					elements.push(el);
@@ -252,19 +356,11 @@ if(window.location.search.match(/t=chat_dragball/)){
 		}
 	}
 
-	/*var mock = [
-		function(){field.lineup.home[1].looseBall();field.lineup.home[0].getBall();},
-		function(){field.lineup.home[0].looseBall();field.lineup.home[1].getBall();}
-	];*/
-
 	function deactivate(){
 		if(field){
-			/*var f = mock.shift();
+			var f = mock.shift();
 			f();
-			mock.push(f);*/
-			field.domElement.parentElement.removeChild(field.domElement);
-			stopListener();
-			field = false;
+			mock.push(f);
 		}
 	}
 
