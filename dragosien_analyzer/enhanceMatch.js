@@ -29,6 +29,7 @@ if(window.location.search.match(/t=chat_dragball/)){
 		}
 		this.strength = strength;
 		this.fitness = 100;
+		this.hasBall = false;
 
 		this.domElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
 		var cx = circleCenters[position].x;
@@ -44,7 +45,11 @@ if(window.location.search.match(/t=chat_dragball/)){
 		circle.setAttribute("fill", team=="home" ? "red" : "blue");
 		circle.setAttribute("cx", 0);
 		circle.setAttribute("cy", 0);
+		circle.setAttribute("stroke", "rgb(212,175,55)");
+		circle.setAttribute("stroke-width", 0);
+
 		this.domElement.appendChild(circle);
+		this.circle = circle;
 
 		var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		text.textContent = this.short;
@@ -74,10 +79,21 @@ if(window.location.search.match(/t=chat_dragball/)){
 		this.domElement.appendChild(text);
 	}
 
+	Dragon.prototype.getBall = function(){
+		this.circle.setAttribute("stroke-width", 3);
+		this.hasBall = true;
+	};
+
+	Dragon.prototype.looseBall = function(){
+		this.circle.setAttribute("stroke-width", 0);	
+		this.hasBall = false;
+	};
+
 	function Field(lineupElement){
 		if(this === window){
 			return;
 		}
+
 		var teamElements = lineupElement.getElementsByClassName("team");
 		this.lineup = {};
 
@@ -232,8 +248,16 @@ if(window.location.search.match(/t=chat_dragball/)){
 		}
 	}
 
+	/*var mock = [
+		function(){field.lineup.home[1].looseBall();field.lineup.home[0].getBall();},
+		function(){field.lineup.home[0].looseBall();field.lineup.home[1].getBall();}
+	];*/
+
 	function deactivate(){
 		if(field){
+			/*var f = mock.shift();
+			f();
+			mock.push(f);*/
 			field.domElement.parentElement.removeChild(field.domElement);
 			stopListener();
 			field = false;
