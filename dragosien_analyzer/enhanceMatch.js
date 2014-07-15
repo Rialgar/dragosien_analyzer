@@ -4,14 +4,14 @@ if(window.location.search.match(/t=chat_dragball/)){
 	var circleCenters = [
 		{x: 40, y: 175},
 		{x: 160, y: 75},
-		{x: 110, y: 175},
+		{x: 130, y: 175},
 		{x: 160, y: 275},
-		{x: 260, y: 175},
+		{x: 280, y: 175},
 		{x: 360, y: 75},
 		{x: 360, y: 275},
-		{x: 460, y: 175},
+		{x: 440, y: 175},
 		{x: 560, y: 75},
-		{x: 610, y: 175},
+		{x: 590, y: 175},
 		{x: 560, y: 275}
 	]
 
@@ -22,24 +22,56 @@ if(window.location.search.match(/t=chat_dragball/)){
 		this.team = team;
 		this.position = position;
 		this.name = name;
+		if(name.length > 10){
+			this.short = name.substring(0,9) + "\u2026";
+		} else {
+			this.short = this.name;
+		}
 		this.strength = strength;
 		this.fitness = 100;
 
-		var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-		circle.setAttribute("r", "7");
-		circle.setAttribute("fill", team=="home" ? "red" : "blue");
+		this.domElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
 		var cx = circleCenters[position].x;
 		var cy = circleCenters[position].y;
 		if(team === "guest"){
 			cx = 740 - cx;
 			cy = 350 - cy;
 		}
-		circle.setAttribute("cx", cx);
-		circle.setAttribute("cy", cy);
-		title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-		title.textContent = name;
-		circle.appendChild(title);
-		this.domElement = circle;
+		this.domElement.setAttribute("transform", "translate("+cx+","+cy+")");
+
+		var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		circle.setAttribute("r", "7");
+		circle.setAttribute("fill", team=="home" ? "red" : "blue");
+		circle.setAttribute("cx", 0);
+		circle.setAttribute("cy", 0);
+		this.domElement.appendChild(circle);
+
+		var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		text.textContent = this.short;
+		text.setAttribute("font-family", "Georgia");
+
+		if(this.position === 0){
+			if(team === "home"){
+				text.setAttribute("dominant-baseline", "text-after-edge");
+				text.setAttribute("dy", -15);
+				text.setAttribute("dx", -35);
+			} else {
+				text.setAttribute("text-anchor", "end");
+				text.setAttribute("dominant-baseline", "text-before-edge");
+				text.setAttribute("dy", 8);
+				text.setAttribute("dx", 35);
+			}
+		} else {
+			if(team === "home"){
+				text.setAttribute("text-anchor", "end");
+				text.setAttribute("dominant-baseline", "text-after-edge");
+				text.setAttribute("dy", -15);
+			} else {
+				text.setAttribute("dominant-baseline", "text-before-edge");
+				text.setAttribute("dy", 8);
+			}
+		}
+		this.domElement.appendChild(text);
 	}
 
 	function Field(lineupElement){
@@ -119,9 +151,9 @@ if(window.location.search.match(/t=chat_dragball/)){
 		var mid = createEllipse(370, 175, 140, 170, "#CCCCCC", "#FFFFFF");
 		this.domElement.appendChild(mid);
 
-		var penaltyHome = createEllipse(0, 175, 70, 100, "gray", "#CCCCCC");
+		var penaltyHome = createEllipse(0, 175, 75, 110, "#AAAAAA", "#CCCCCC");
 		this.domElement.appendChild(penaltyHome);
-		var penaltyGuest = createEllipse(740, 175, 70, 100, "gray", "#CCCCCC");
+		var penaltyGuest = createEllipse(740, 175, 75, 110, "#AAAAAA", "#CCCCCC");
 		this.domElement.appendChild(penaltyGuest);
 
 		var midLine = createLine(370, 5, 370, 395, "#CCCCCC");
