@@ -246,10 +246,11 @@ if(window.location.search.match(/t=chat_dragball/)){
 			cx = 740;
 			keeper = this.lineup.guest[0];
 		} else {
-			cy = 0;
+			cx = 0;
 			keeper = this.lineup.home[0];
 		}
 		this.pass(dragon, {cx:cx,cy:cy}, keeper, !result.success);
+		this.nextActive = keeper;
 	}
 
 	Field.prototype.attack = function(attacker, defender, success){
@@ -257,47 +258,155 @@ if(window.location.search.match(/t=chat_dragball/)){
 			this.pass(defender, attacker);
 		} else if (this.passElement){
 			this.domElement.removeChild(this.passElement);
+			this.passElement = false;
 		}
 	}
+
+	Field.prototype.resetDragons = function() {
+		if(this.passElement){
+			this.domElement.removeChild(this.passElement);
+			this.passElement = false;
+		}
+		if(!this.activeDragon && this.nextActive){
+			this.activeDragon = this.nextActive;
+			this.activeDragon.getBall();
+		}
+	};
 
 	Field.prototype.getDragon = function(team, position){
 		return this.lineup[team][position];
 	}
 
-	function match(pattern){
+	Field.prototype.getDragonForSpan = function(span){
+		console.assert(span.tagName.toLowerCase() == "span");
+		var team;
+		var position;
+		if(span.classList.contains("team0")){
+			team = "home";
+		} else {
+			team = "guest";
+		}
+		position = parseInt(span.className.match(/pos([0-9]{1,2})/)[1])-1;
+		return this.getDragon(team, position);
+	}
 
+	function match(pattern){
+		var dragons = pattern.dragons;
+		var patterns = [
+			{
+				regex: / <DRAGON0> stellt sich <DRAGON1> in den Weg und nimmt ihm mit (etwas|viel) Glück den Ball ab. /,
+				func: function(){
+					field.attack(dragons[0], dragons[1], true);
+				}
+			},
+			{
+				regex: / <DRAGON0> läuft auf <DRAGON1> zu, dieser? dribbelt aber (souverän|mühelos) um <DRAGON0> herum und passt ((direkt |rechts |links )?nach (rechts |links |vorn )+|in die Mitte )zu <DRAGON2>. /,
+				func: function(){
+					field.attack(dragons[0], dragons[1], false);
+					field.pass(dragons[1], dragons[2]);
+				}
+			},
+			{
+				regex: / <DRAGON0> startet einen Spurt, weicht <DRAGON1> aus und wirft den Ball in die Mitte zu <DRAGON2>. /,
+				func: function(){
+					field.attack(dragons[1], dragons[0], false);
+					field.pass(dragons[0], dragons[2]);	
+				}
+			},
+			{
+				regex: / <DRAGON0> schnappt sich den Ball, umdribbelt glücklich <DRAGON1> und schießt ihn mit dem Fuß direkt nach vorn zu <DRAGON2>. /,
+				func: function(){
+					field.attack(dragons[1], dragons[0], false);
+					field.pass(dragons[0], dragons[2]);	
+				}
+			},
+			{
+				regex: / <DRAGON0> nimmt den Ball und wirft ihn in hohem Bogen Richtung <DRAGON1>. /,
+				func: function(){
+					field.pass(dragons[0], dragons[1]);
+				}
+			},
+			{
+				regex: / <DRAGON0> nimmt den Ball nur kurz an und schießt ihn mit dem Fuß (direkt nach vorn|in die Mitte) zu <DRAGON1>. /,
+				func: function(){
+					field.pass(dragons[0], dragons[1]);
+				}
+			},
+			{
+				regex: / <DRAGON0> fängt den Ball, holt schnell aus, wirft ihn  zu <DRAGON1> und damit (dem|der)  <DRAGON2> direkt in die Arme. /,
+				func: function(){
+					field.pass(dragons[0], dragons[1], dragons[2], true);
+				}
+			},
+			{	regex: / <DRAGON0> fängt den Ball, holt schnell aus und wirft ihn über <DRAGON1> (direkt|rechts) nach vorn zu <DRAGON2>. /,
+				func: function(){
+					field.pass(dragons[0], dragons[2], dragons[1], false);
+				}
+			},
+			{
+				regex: / <DRAGON0> nimmt den Ball und holt weit aus. <DRAGON1> läuft aus dem Tor heraus, verkürzt geschickt den Winkel, <DRAGON0> springt, schlägt mit den Flügeln und wirft den Ball am Tor vorbei. /,
+				func: function(){
+					field.shoot(dragons[0], {miss: true});
+				}
+			},
+			{
+				regex: / <DRAGON0> nimmt den Ball und holt weit aus.  <DRAGON1> .*\. <GOAL> Die Menge jubelt, /,
+				func: function(){
+					field.shoot(dragons[0], {success: true});
+				}
+			},
+			{
+				regex: /<SCORE><TEAM(0|1)> greift an: /,
+				func: function(){
+					field.resetDragons();
+				}
+			},
+			{
+				regex: /<BREAK>/,
+				func: function(){
+					field.resetDragons();
+				}
+			}
+		]
+		for(var i = 0 ; i < patterns.length; i++){
+			if(pattern.string.match(patterns[i].regex)){
+				return patterns[i].func();
+			}
+		}
+		console.log("unkown pattern", '"'+pattern.string+'"');
 	}
 
 	function patternize(elements){
-		var pattern = "";
+		var string = "";
 		var dragons = [];
 		for(var i = 2; i < elements.length; i++){
 			var e = elements[i];
 			if(e.nodeType === Element.TEXT_NODE){
 				if(e.textContent.match(/ [0-9]{1,2}(min)? - \([0-9]+:[0-9]+\) - /)){
-					pattern += "[SCORE]";
+					string += "<SCORE>";
 				} else {
-					pattern += e.textContent;
+					string += e.textContent;
 				}
 			} else if(e.tagName.toLowerCase() === "span"){
 				if (e.className.match(/team[01] pos[0-9]{1,2}/)) {
-					var dragon = e.textContent;
+					var dragon = field.getDragonForSpan(e);
 					var id = dragons.indexOf(dragon);
 					if(id < 0){
 						id = dragons.push(dragon) - 1;
 					}
-					pattern += "[DRAGON" + id + "]";
+					string += "<DRAGON" + id + ">";
 				} else if(e.className.match(/team[01]/)){
-					pattern += "["+e.className.match(/team[01]/)[0].toUpperCase()+"]";
+					string += "<"+e.className.match(/team[01]/)[0].toUpperCase()+">";
 				} else if (e.textContent.match("Pausenpfiff")) {
-					return "[BREAK]";
+					string = "<BREAK>";
+					break;
 				}
 			} else if(e.tagName.toLowerCase() == "i" && e.hasAttribute("res")){
 			} else if(e.tagName.toLowerCase() == "b"){
 				if(e.textContent.match(/TO+R!+/)){
-					pattern += "[GOAL]";
+					string += "<GOAL>";
 				} else if(e.textContent.match(/[0-9]+:[0-9]+/)){
-					pattern += "[SCORE]";
+					string += "<SCORE>";
 				} else {
 					debugger;
 				}
@@ -305,17 +414,14 @@ if(window.location.search.match(/t=chat_dragball/)){
 				debugger;
 			}
 		}
-		return pattern;
+		return {string:string, dragons:dragons};
 	}
 
 	function processMessage(text, elements, field){
-		var pattern = patternize(elements);
-		var func = match(pattern);
-		if(func){
-			func(elements);
-		} else {
-			console.log("unkown pattern", '"'+pattern+'"');
-		}	
+		if(elements.length > 2 && elements[1].textContent == "Kommentator:"){
+			var pattern = patternize(elements);
+			match(pattern);
+		}
 	}
 
 	var mo;
