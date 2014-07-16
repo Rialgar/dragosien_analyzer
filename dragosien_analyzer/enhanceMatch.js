@@ -198,30 +198,47 @@ if(window.location.search.match(/t=chat_dragball/)){
 		};
 	}
 
-	Field.prototype.passTo = function(target, interceptor, interceptSucess) {
+	Field.prototype.highlightAt = function(pos){
+
+	};
+
+	Field.prototype.removeHighlight = function(){
+
+	}
+
+	Field.prototype.pass = function(from, to, interceptor, interceptSucess) {
 		if(interceptor && interceptSucess){
-			this.passTo(interceptor);
+			this.pass(from, interceptor);
 		} else {
+			if(from && this.activeDragon != from){
+				if(this.activeDragon){
+					this.activeDragon.looseBall();
+				}
+				this.activeDragon = from;
+				from.getBall();
+			}
 			if(this.activeDragon){
 				this.activeDragon.looseBall();
-				if(this.pass){
-					this.domElement.removeChild(this.pass);
+				if(this.passElement){
+					this.domElement.removeChild(this.passElement);
 				}
-				this.pass = createLine(this.activeDragon.cx, this.activeDragon.cy, target.cx, target.cy, BALL_COLOR);
-				this.domElement.insertBefore(this.pass, this.dragonGroup);
+				this.passElement = createLine(this.activeDragon.cx, this.activeDragon.cy, to.cx, to.cy, BALL_COLOR);
+				this.domElement.insertBefore(this.passElement, this.dragonGroup);
 			}
-			if(target.constructor === Dragon){
-				this.activeDragon = target;
-				target.getBall();
+			if(to.constructor === Dragon){
+				this.activeDragon = to;
+				to.getBall();
+				this.removeHighlight();
 			} else {
 				this.activeDragon = false;
+				this.highlightAt(to);
 			}
 		}
 	}
 
 	Field.prototype.shoot = function(dragon, result){
 		if(!this.activeDragon){
-			this.passTo(dragon);
+			this.pass(false, dragon);
 		}
 		var cx, cy, keeper;
 		cy = 175;
@@ -232,14 +249,14 @@ if(window.location.search.match(/t=chat_dragball/)){
 			cy = 0;
 			keeper = this.lineup.home[0];
 		}
-		this.passTo({cx:cx,cy:cy}, keeper, !result.success);
+		this.pass(dragon, {cx:cx,cy:cy}, keeper, !result.success);
 	}
 
-	Field.prototype.attackBy = function(attacker, success){
+	Field.prototype.attack = function(attacker, defender, success){
 		if(success){
-			this.passTo(attacker);
-		} else if (this.pass){
-			this.domElement.removeChild(this.pass);
+			this.pass(defender, attacker);
+		} else if (this.passElement){
+			this.domElement.removeChild(this.passElement);
 		}
 	}
 
@@ -263,13 +280,15 @@ if(window.location.search.match(/t=chat_dragball/)){
 					pattern += e.textContent;
 				}
 			} else if(e.tagName.toLowerCase() === "span"){
-				if ((e.classList.contains("team0") || e.classList.contains("team1"))) {
+				if (e.className.match(/team[01] pos[0-9]{1,2}/)) {
 					var dragon = e.textContent;
 					var id = dragons.indexOf(dragon);
 					if(id < 0){
 						id = dragons.push(dragon) - 1;
 					}
-					pattern += "[DRAGON-" + id + "]";
+					pattern += "[DRAGON" + id + "]";
+				} else if(e.className.match(/team[01]/)){
+					pattern += "["+e.className.match(/team[01]/)[0].toUpperCase()+"]";
 				} else if (e.textContent.match("Pausenpfiff")) {
 					return "[BREAK]";
 				}
@@ -295,7 +314,7 @@ if(window.location.search.match(/t=chat_dragball/)){
 		if(func){
 			func(elements);
 		} else {
-			console.log("unkown pattern", pattern);
+			console.log("unkown pattern", '"'+pattern+'"');
 		}	
 	}
 
