@@ -262,12 +262,28 @@ if(window.location.search.match(/t=chat_dragball/)){
 		}
 	}
 
-	Field.prototype.resetDragons = function() {
+	Field.prototype.resetDragons = function(reason) {
 		if(this.passElement){
 			this.domElement.removeChild(this.passElement);
 			this.passElement = false;
 		}
-		if(!this.activeDragon && this.nextActive){
+		if(reason.end){
+			if(this.activeDragon){
+				this.activeDragon.looseBall();
+			}
+		}else if(reason.break_){
+			if(this.activeDragon){
+				var keeper = this.lineup[this.activeDragon.team][0];
+				this.activeDragon.looseBall();
+				this.activeDragon = keeper;
+			} else if (this.nextActive){
+				this.activeDragon = this.nextActive;
+			}
+			this.activeDragon.getBall();
+		}else if(reason.begin){
+			this.activeDragon = this.lineup.home[0];
+			this.activeDragon.getBall();
+		}else if(!this.activeDragon && this.nextActive){
 			this.activeDragon = this.nextActive;
 			this.activeDragon.getBall();
 		}
@@ -290,81 +306,156 @@ if(window.location.search.match(/t=chat_dragball/)){
 		return this.getDragon(team, position);
 	}
 
+	var direction = "("+
+						"(direkt |weiter |zurück |weit |ganz )?"+
+						"((rechts |links )?(nach (rechts |links |vorn )+)?)?"+
+						"(in die Mitte (vor das Tor )?|ins Mittelfeld )?"+
+						"| "+
+					")";
+					
+	var luck = "(mit (etwas|viel) Glück|glücklich|souverän|(völlig )?mühelos|ohne (große )?Mühe|gekonnt|geschickt|schnell|verwegen|)";
+
 	function match(pattern){
 		var dragons = pattern.dragons;
 		var patterns = [
 			{
-				regex: / <DRAGON0> stellt sich <DRAGON1> in den Weg und nimmt ihm mit (etwas|viel) Glück den Ball ab. /,
+				regex: new RegExp("<DRAGON0> stellt sich <DRAGON1> in den Weg und nimmt ih(m|r) "+luck+" den Ball ab\."),
 				func: function(){
 					field.attack(dragons[0], dragons[1], true);
 				}
 			},
 			{
-				regex: / <DRAGON0> läuft auf <DRAGON1> zu, dieser? dribbelt aber (souverän|mühelos) um <DRAGON0> herum und passt ((direkt |rechts |links )?nach (rechts |links |vorn )+|in die Mitte )zu <DRAGON2>. /,
+				regex: new RegExp("<DRAGON0> läuft auf <DRAGON1> zu und nimmt ih(m|r) "+luck+" den Ball ab\."),
+				func: function(){
+					field.attack(dragons[0], dragons[1], true);
+				}
+			},
+			{
+				regex: new RegExp("<DRAGON0> startet einen Spurt, <DRAGON1> kann ih(m|r) aber folgen und nimmt ih(m|r) "+luck+" den Ball ab\."),
+				func: function(){
+					field.attack(dragons[1], dragons[0], true);
+				}
+			},
+			{
+				regex: /<DRAGON0> schnappt sich den Ball, setzt zum Dribbling an, scheitert aber an eine(m|r) aufmerksamen <DRAGON1>\./,
+				func: function(){
+					field.attack(dragons[1], dragons[0], true);
+				}
+			},
+			{
+				regex: new RegExp("<DRAGON0> läuft auf <DRAGON1> zu, dieser? dribbelt aber "+luck+" um <DRAGON0> herum und passt "+direction+"zu <DRAGON2>\\."),
 				func: function(){
 					field.attack(dragons[0], dragons[1], false);
 					field.pass(dragons[1], dragons[2]);
 				}
 			},
 			{
-				regex: / <DRAGON0> startet einen Spurt, weicht <DRAGON1> aus und wirft den Ball in die Mitte zu <DRAGON2>. /,
+				regex: new RegExp("<DRAGON0> startet einen Spurt, weicht <DRAGON1> aus und wirft den Ball "+direction+"zu <DRAGON2>\\."),
 				func: function(){
 					field.attack(dragons[1], dragons[0], false);
 					field.pass(dragons[0], dragons[2]);	
 				}
 			},
 			{
-				regex: / <DRAGON0> schnappt sich den Ball, umdribbelt glücklich <DRAGON1> und schießt ihn mit dem Fuß direkt nach vorn zu <DRAGON2>. /,
+				regex: new RegExp("<DRAGON0> schnappt sich den Ball, umdribbelt "+luck+" <DRAGON1> und schießt ihn mit dem Fuß "+direction+"zu <DRAGON2>\\."),
 				func: function(){
 					field.attack(dragons[1], dragons[0], false);
 					field.pass(dragons[0], dragons[2]);	
 				}
 			},
 			{
-				regex: / <DRAGON0> nimmt den Ball und wirft ihn in hohem Bogen Richtung <DRAGON1>. /,
-				func: function(){
-					field.pass(dragons[0], dragons[1]);
-				}
-			},
-			{
-				regex: / <DRAGON0> nimmt den Ball nur kurz an und schießt ihn mit dem Fuß (direkt nach vorn|in die Mitte) zu <DRAGON1>. /,
-				func: function(){
-					field.pass(dragons[0], dragons[1]);
-				}
-			},
-			{
-				regex: / <DRAGON0> fängt den Ball, holt schnell aus, wirft ihn  zu <DRAGON1> und damit (dem|der)  <DRAGON2> direkt in die Arme. /,
+				regex: /<DRAGON0> fängt den Ball, holt schnell aus, wirft ihn  zu <DRAGON1> und damit (dem|der)  <DRAGON2> direkt in die Arme\./,
 				func: function(){
 					field.pass(dragons[0], dragons[1], dragons[2], true);
 				}
 			},
-			{	regex: / <DRAGON0> fängt den Ball, holt schnell aus und wirft ihn über <DRAGON1> (direkt|rechts) nach vorn zu <DRAGON2>. /,
+			{
+				regex: /<DRAGON0> nimmt den Ball und wirft ihn in hohem Bogen Richtung <DRAGON1>, <DRAGON2> geht jedoch dazwischen und fängt ihn noch während des Fluges ab\./,
+				func: function(){
+					field.pass(dragons[0], dragons[1], dragons[2], true);
+				}
+			},
+			{	regex: new RegExp("<DRAGON0> fängt den Ball, holt schnell aus und wirft ihn über <DRAGON1> "+direction+"zu <DRAGON2>\\."),
 				func: function(){
 					field.pass(dragons[0], dragons[2], dragons[1], false);
 				}
 			},
 			{
-				regex: / <DRAGON0> nimmt den Ball und holt weit aus. <DRAGON1> läuft aus dem Tor heraus, verkürzt geschickt den Winkel, <DRAGON0> springt, schlägt mit den Flügeln und wirft den Ball am Tor vorbei. /,
+				regex: /<DRAGON0> nimmt den Ball und wirft ihn in hohem Bogen Richtung <DRAGON1>\./,
 				func: function(){
-					field.shoot(dragons[0], {miss: true});
+					field.pass(dragons[0], dragons[1]);
 				}
 			},
 			{
-				regex: / <DRAGON0> nimmt den Ball und holt weit aus.  <DRAGON1> .*\. <GOAL> Die Menge jubelt, /,
+				regex: new RegExp("<DRAGON0> nimmt den Ball nur kurz an und schießt ihn mit dem Fuß "+direction+"zu <DRAGON1>\\."),
+				func: function(){
+					field.pass(dragons[0], dragons[1]);
+				}
+			},
+			{
+				regex: /<DRAGON0> nimmt den Ball und holt weit aus\. Der Ball trifft die Latte, fällt vor <DRAGON1> auf das Spielfeld und mit einem gezielten Sprung fängt <DRAGON1> den Ball\./,
+				func: function(){
+					field.shoot(dragons[0], {bar: true});
+				}
+			},
+			{
+				regex: /<DRAGON0> nimmt den Ball und holt weit aus\. <DRAGON1> sieht den Ball, streckt sich und lenkt ihn über die Latte\./,
+				func: function(){
+					field.shoot(dragons[0], {redirect: true});
+				}
+			},
+			{
+				regex: /<DRAGON0> nimmt den Ball und holt weit aus\. <DRAGON1> hechtet mit großen Augen in Richtung Ball und kann ihn gerade noch am Tor vorbei lenken\./,
+				func: function(){
+					field.shoot(dragons[0], {redirect: true});
+				}
+			},
+			{
+				regex: /<DRAGON0> nimmt den Ball und holt weit aus\. <DRAGON1> läuft aus dem Tor heraus, verkürzt geschickt den Winkel, <DRAGON0> springt, schlägt mit den Flügeln und wirft den Ball (am Tor vorbei|über das Tor)\./,
+				func: function(){
+					field.shoot(dragons[0], {leave: true, miss: true});
+				}
+			},
+			{
+				regex:/<DRAGON0> nimmt den Ball und holt weit aus\. <DRAGON1> läuft aus dem Tor heraus, verkürzt geschickt den Winkel, <DRAGON0> springt, schlägt mit den Flügeln und wirft den Ball\.\. in die Arme von <DRAGON1>\./,
+				func: function(){
+					field.shoot(dragons[0], {leave: true, caught: true});
+				}
+			},
+			{
+				regex: /<DRAGON0> nimmt den Ball und holt weit aus.*\. <GOAL> Die Menge jubelt,/,
 				func: function(){
 					field.shoot(dragons[0], {success: true});
 				}
 			},
 			{
-				regex: /<SCORE><TEAM(0|1)> greift an: /,
+				regex: /<SCORE><TEAM(0|1)> greift an:/,
 				func: function(){
-					field.resetDragons();
+					field.resetDragons({});
 				}
 			},
 			{
 				regex: /<BREAK>/,
 				func: function(){
-					field.resetDragons();
+					field.resetDragons({break_: true});
+				}
+			},
+			{
+				regex: /<END>/,
+				func: function(){
+					field.resetDragons({end: true});
+				}
+			},
+			{
+				regex: /Endstand: <SCORE>/,
+				func: function(){
+					field.resetDragons({end: true});
+				}
+			},
+			{
+				regex: /von <TEAM0> und <TEAM1> stehen sich.*gegenüber\./,
+				func: function(){
+					field.resetDragons({begin: true});
 				}
 			}
 		]
@@ -399,6 +490,9 @@ if(window.location.search.match(/t=chat_dragball/)){
 					string += "<"+e.className.match(/team[01]/)[0].toUpperCase()+">";
 				} else if (e.textContent.match("Pausenpfiff")) {
 					string = "<BREAK>";
+					break;
+				} else if (e.textContent.match("Abpfiff")) {
+					string = "<END>";
 					break;
 				}
 			} else if(e.tagName.toLowerCase() == "i" && e.hasAttribute("res")){
@@ -483,9 +577,8 @@ if(window.location.search.match(/t=chat_dragball/)){
 
 	function deactivate(){
 		if(field){
-			var f = mock.shift();
-			f();
-			mock.push(f);
+			field.domElement.parentElement.removeChild(field.domElement);
+			field = false;
 		}
 	}
 
