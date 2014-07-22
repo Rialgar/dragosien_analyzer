@@ -307,14 +307,14 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 		return this.getDragon(team, position);
 	}
 
-	var direction = "("+
+	var direction = ".*";/*("+
 						"(direkt |weiter |zurück |weit |ganz )?"+
 						"((rechts |links )?(nach (rechts |links |vorn )+)?)?"+
 						"(in die Mitte (vor das Tor )?|ins Mittelfeld )?"+
 						"| "+
-					")";
+					")";*/
 					
-	var luck = "(mit (etwas|viel) Glück|glücklich|souverän|(völlig )?mühelos|ohne (große )?Mühe|gekonnt|geschickt|schnell|verwegen|)";
+	var luck = ".*";//(mit (etwas|viel) Glück|glücklich|souverän|(völlig )?mühelos|ohne (große )?Mühe|gekonnt|geschickt|schnell|verwegen|)";
 
 	function match(pattern){
 		var dragons = pattern.dragons;
@@ -394,6 +394,24 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 				}
 			},
 			{
+				regex: new RegExp("<DRAGON0> greift den Ball, schaut sich kurz um und wirft den Ball schließlich "+direction+"zu <DRAGON1>\\." ),
+				func: function(){
+					field.pass(dragons[0], dragons[1]);
+				}
+			},
+			{
+				regex: new RegExp("<DRAGON0> nimmt den Ball auf, läuft völlig freistehend ein paar Meter in Richtung Tor und passt schließlich "+direction+"zu <DRAGON1>\\." ),
+				func: function(){
+					field.pass(dragons[0], dragons[1]);
+				}
+			},
+			{
+				regex: new RegExp("<DRAGON0> nimmt den Ball, springt und gewinnt mit ein paar Flügelschlägen einen guten Überblick\\. Dann passt (er|sie) schließlich "+direction+"zu <DRAGON1>\\."),
+				func: function(){
+					field.pass(dragons[0], dragons[1]);
+				}
+			},
+			{
 				regex: /<DRAGON0> nimmt den Ball und holt weit aus\. Der Ball trifft die Latte, fällt vor <DRAGON1> auf das Spielfeld und mit einem gezielten Sprung fängt <DRAGON1> den Ball\./,
 				func: function(){
 					field.shoot(dragons[0], {bar: true});
@@ -454,7 +472,7 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 				}
 			},
 			{
-				regex: /von <TEAM0> und <TEAM1> stehen sich.*gegenüber\./,
+				regex: /von <TEAM0> und <TEAM1> stehen sich.*gegenüber/,
 				func: function(){
 					field.resetDragons({begin: true});
 				}
@@ -638,9 +656,14 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 				var next;
 				do{
 					next = match.shift();
-				}while(next.length < 5);
+				}while(typeof(next) != "undefined" && next.length < 5);
+				if(typeof(next) == "undefined"){
+					window.clearInterval(interval);
+					interval = false;
+					return;
+				}
 				processLine(next);
-			}, 300);
+			}, 50);
 		}
 
 		button.addEventListener("click", function(e){
