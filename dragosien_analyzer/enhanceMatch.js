@@ -1,5 +1,6 @@
-if(window.location.search.match(/t=chat_dragball/)){
-	var chat = document.getElementById("chat_content");
+if(window.location.search.match(/t=(chat_dragball|game_details)/)){
+	var live = !!window.location.search.match(/t=chat_dragball/);
+	var replay = !!window.location.search.match(/t=game_details/);
 
 	var CIRCLE_CENTERS = [
 		{x: 40, y: 175},
@@ -467,13 +468,13 @@ if(window.location.search.match(/t=chat_dragball/)){
 		console.log("unkown pattern", '"'+pattern.string+'"');
 	}
 
-	function patternize(elements){
+	function patternize(elements, startindex){
 		var string = "";
 		var dragons = [];
-		for(var i = 2; i < elements.length; i++){
+		for(var i = startindex; i < elements.length; i++){
 			var e = elements[i];
 			if(e.nodeType === Element.TEXT_NODE){
-				if(e.textContent.match(/ [0-9]{1,2}(min)? - \([0-9]+:[0-9]+\) - /)){
+				if(e.textContent.match(/[0-9]{1,2}(min)? - \([0-9]+:[0-9]+\) - /)){
 					string += "<SCORE>";
 				} else {
 					string += e.textContent;
@@ -511,86 +512,17 @@ if(window.location.search.match(/t=chat_dragball/)){
 		return {string:string, dragons:dragons};
 	}
 
-	function processMessage(text, elements, field){
-		if(elements.length > 2 && elements[1].textContent == "Kommentator:"){
-			var pattern = patternize(elements);
+	function processMessage(elements, field){
+		if(live && elements.length > 2 && elements[1].textContent == "Kommentator:"){
+			var pattern = patternize(elements, 2);
+			match(pattern);
+		} else if(replay) {
+			var pattern = patternize(elements, 0);
 			match(pattern);
 		}
 	}
 
-	var mo;
-	function startListener(field){
-		var last = "";
-		mo = new MutationObserver(function(e){
-			var brs = e[0].target.getElementsByTagName("br");
-			if(brs.length == 0){
-				return;
-			}
-			var index = 0;
-			var br = brs[index];
-			var el = e[0].target.firstChild;
-			var text = "";
-			while(text != last){
-				text = "";
-				for(; el && el != br; el = el.nextSibling){
-					text += el.textContent;
-				}
-				index++;
-				br = brs[index];
-				el = el.nextSibling;
-			}
-			while(index < brs.length){
-				text = "";
-				var elements = [];
-				for(; el && el != br; el = el.nextSibling){
-					text += el.textContent;
-					elements.push(el);
-				}
-				last = text;
-				processMessage(text, elements, field);
-				index++;
-				br = brs[index];
-				el = el.nextSibling;
-			}
-		});
-
-		mo.observe(chat, {childList:true});
-	}
-
-	function stopListener(){
-		if(mo){
-			mo.disconnect();
-		}
-		mo = false;
-	}
-
 	var button = document.createElement("button");
-	var field = false;
-
-	function activate(){
-		if(!field){
-			field = new Field(document.getElementsByClassName("lineup")[0]);
-			chat.parentElement.insertBefore(field.domElement, button);
-			startListener(field);
-		}
-	}
-
-	function deactivate(){
-		if(field){
-			field.domElement.parentElement.removeChild(field.domElement);
-			field = false;
-		}
-	}
-
-	button.addEventListener("click", function(e){
-		if(!field){
-			activate();
-		} else {
-			deactivate();
-		}
-	})
-
-	button.textContent = "Live Grafik an/aus";
 	button.style.width ="740px";
 	button.style.height = "30px";
 	button.style.borderStyle = "solid";
@@ -601,5 +533,121 @@ if(window.location.search.match(/t=chat_dragball/)){
 	button.style.marginTop = "10px";
 	button.style.marginBottom = "10px";
 
-	chat.parentElement.insertBefore(button, chat.parentElement.getElementsByTagName("h1")[1]);
+	var field = false;
+
+	if(live){
+
+		var chat = document.getElementById("chat_content");
+		var mo;
+		function startListener(field){
+			var last = "";
+			mo = new MutationObserver(function(e){
+				var brs = e[0].target.getElementsByTagName("br");
+				if(brs.length == 0){
+					return;
+				}
+				var index = 0;
+				var br = brs[index];
+				var el = e[0].target.firstChild;
+				var text = "";
+				while(text != last){
+					text = "";
+					for(; el && el != br; el = el.nextSibling){
+						text += el.textContent;
+					}
+					index++;
+					br = brs[index];
+					el = el.nextSibling;
+				}
+				while(index < brs.length){
+					text = "";
+					var elements = [];
+					for(; el && el != br; el = el.nextSibling){
+						text += el.textContent;
+						elements.push(el);
+					}
+					last = text;
+					processMessage(elements, field);
+					index++;
+					br = brs[index];
+					el = el.nextSibling;
+				}
+			});
+
+			mo.observe(chat, {childList:true});
+		}
+
+		function stopListener(){
+			if(mo){
+				mo.disconnect();
+			}
+			mo = false;
+		}
+
+		function activate(){
+			if(!field){
+				field = new Field(document.getElementsByClassName("lineup")[0]);
+				chat.parentElement.insertBefore(field.domElement, button);
+				startListener(field);
+			}
+		}
+
+		function deactivate(){
+			if(field){
+				field.domElement.parentElement.removeChild(field.domElement);
+				field = false;
+			}
+		}
+
+		button.addEventListener("click", function(e){
+			if(!field){
+				activate();
+			} else {
+				deactivate();
+			}
+		})
+
+		button.textContent = "Live Grafik an/aus";
+		chat.parentElement.insertBefore(button, chat.parentElement.getElementsByTagName("h1")[1]);
+	} else if (replay){
+
+		var matchElement = document.evaluate("//div[@class='mainContent']/div[2]", document).iterateNext();
+		var interval;
+
+		var currentActionElement = document.createElement("div");
+		currentActionElement.style.height = "5em";
+		matchElement.parentElement.insertBefore(currentActionElement, matchElement);
+
+		function processLine(line){
+			currentActionElement.innerHTML = line;
+			var elements = currentActionElement.childNodes;
+			processMessage(elements, field);
+		}
+
+		function startReplay(){
+			if(!field){
+				field = new Field(document.getElementsByClassName("lineup")[0]);
+				matchElement.parentElement.insertBefore(field.domElement, button);
+			}
+			if(interval){
+				window.clearInterval(interval);
+			}
+
+			var match = matchElement.innerHTML.split("<br>");
+			interval = window.setInterval(function(){
+				var next;
+				do{
+					next = match.shift();
+				}while(next.length < 5);
+				processLine(next);
+			}, 300);
+		}
+
+		button.addEventListener("click", function(e){
+			startReplay();
+		})
+
+		button.textContent = "Spiel grafisch abspielen";
+		matchElement.parentElement.insertBefore(button, matchElement);
+	}
 }
