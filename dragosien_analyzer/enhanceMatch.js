@@ -161,6 +161,21 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 		return out;
 	}
 
+	function animateFill(svgElement){
+		svgElement.setAttribute("fill-opacity", "0.0");
+		var on = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+		on.setAttribute("attributeType", "XML");
+		on.setAttribute("attributeName", "fill-opacity");
+		on.setAttribute("from", "0.0");
+		on.setAttribute("to", "0.3");
+		on.setAttribute("dur", "0.6s");
+		on.setAttribute("fill", "freeze");
+		on.setAttribute("values", "0.0;1.0;0.3");
+		on.setAttribute("keyTimes", "0;0.2;1");
+		svgElement.appendChild(on);
+		on.beginElement();
+	}
+
 	Field.prototype.createDomElement = function(){
 		this.domElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		this.domElement.style.width = "740px";
@@ -199,12 +214,22 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 		};
 	}
 
-	Field.prototype.highlightAt = function(pos){
-
+	Field.prototype.highlightAt = function(pos, color){
+		this.removeHighlight();
+		this.highlight = createEllipse(pos.cx, pos.cy, 75, 110, "transparent", color);
+		if(this.passElement){
+			this.domElement.insertBefore(this.highlight, this.passElement);
+		}else{
+			this.domElement.insertBefore(this.highlight, this.dragonGroup);
+		}
+		animateFill(this.highlight);
 	};
 
 	Field.prototype.removeHighlight = function(){
-
+		if(this.highlight){
+			this.domElement.removeChild(this.highlight);
+			this.highlight = false;
+		}
 	}
 
 	Field.prototype.pass = function(from, to, interceptor, interceptSucess) {
@@ -229,10 +254,8 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 			if(to.constructor === Dragon){
 				this.activeDragon = to;
 				to.getBall();
-				this.removeHighlight();
 			} else {
 				this.activeDragon = false;
-				this.highlightAt(to);
 			}
 		}
 	}
@@ -241,16 +264,22 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 		if(!this.activeDragon){
 			this.pass(false, dragon);
 		}
-		var cx, cy, keeper;
+		var cx, cy, color, keeper;
 		cy = 175;
 		if(dragon.team === "home"){
 			cx = 740;
+			color = "red";
 			keeper = this.lineup.guest[0];
 		} else {
 			cx = 0;
+			color = "blue";
 			keeper = this.lineup.home[0];
 		}
-		this.pass(dragon, {cx:cx,cy:cy}, keeper, !result.success);
+		var goalPos = {cx:cx,cy:cy};
+		this.pass(dragon, goalPos , keeper, !result.success);
+		if(result.success){
+			this.highlightAt(goalPos, color);
+		}
 		this.nextActive = keeper;
 	}
 
@@ -264,6 +293,7 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 	}
 
 	Field.prototype.resetDragons = function(reason) {
+		this.removeHighlight();
 		if(this.passElement){
 			this.domElement.removeChild(this.passElement);
 			this.passElement = false;
@@ -663,7 +693,7 @@ if(window.location.search.match(/t=(chat_dragball|game_details)/)){
 					return;
 				}
 				processLine(next);
-			}, 50);
+			}, 1000);
 		}
 
 		button.addEventListener("click", function(e){
