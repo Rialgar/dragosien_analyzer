@@ -241,7 +241,7 @@ function printDragons(){
 					text += ' / ';
 					text += dragon.intelligenz;
 					text += ' --- ';
-					text += dragon.fitness + '%';
+					text += dragon.vitalitaet + '%';
 					text += ' -- ';
 					text += '[user]';
 					text += guild.byDragon[dragon.url];
